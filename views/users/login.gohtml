@@ -1,0 +1,26 @@
+{{define "yield"}}
+    <div class="panel control">
+        <form method="post" action="/login">
+            <div class="panel-heading">Welcome back</div>
+            <div style="padding: 12px 14px">
+                <div class="field">
+                    <label class="label" for="email">Email: </label>
+                    <div class="control">
+                        <input class="input" name="email" id="email" type="email"/>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="password">Password: </label>
+                    <div class="control">
+                        <input class="input" name="password" id="password" type="password">
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-primary is-right" type="submit">Log in</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{{end}}

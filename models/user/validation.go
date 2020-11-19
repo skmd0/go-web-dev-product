@@ -20,6 +20,8 @@ var (
 	ErrEmailTaken        = errors.New("email address is already registered")
 	ErrPasswordTooShort  = errors.New("password must be at least 8 characters long")
 	ErrPasswordRequired  = errors.New("password is required")
+	ErrRememberTooShort  = errors.New("remember token is too short")
+	ErrRememberRequired  = errors.New("remember token hash is required")
 )
 
 const userPwPepper = "secret-user-pepper-string"
@@ -71,8 +73,8 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 func (uv *userValidator) Create(user *User) error {
 	err := runUserValFunc(user, uv.passRequired, uv.passMinLength, uv.bcryptPassword, uv.passHashRequired,
-		uv.hmacGenerateIfMissing, uv.hmacHashToken, uv.requireEmail, uv.normalizeEmail, uv.validEmail,
-		uv.emailIsAvailable)
+		uv.hmacGenerateIfMissing, uv.hmacMinBytes, uv.hmacHashToken, uv.hmacHashRequired, uv.requireEmail,
+		uv.normalizeEmail, uv.validEmail, uv.emailIsAvailable)
 	if err != nil {
 		return err
 	}
@@ -80,8 +82,8 @@ func (uv *userValidator) Create(user *User) error {
 }
 
 func (uv *userValidator) Update(user *User) error {
-	err := runUserValFunc(user, uv.passMinLength, uv.bcryptPassword, uv.hmacHashToken, uv.requireEmail,
-		uv.normalizeEmail, uv.validEmail, uv.emailIsAvailable)
+	err := runUserValFunc(user, uv.passMinLength, uv.bcryptPassword, uv.hmacMinBytes, uv.hmacHashToken,
+		uv.hmacHashRequired, uv.requireEmail, uv.normalizeEmail, uv.validEmail, uv.emailIsAvailable)
 	if err != nil {
 		return err
 	}
@@ -126,6 +128,27 @@ func (uv *userValidator) hmacGenerateIfMissing(user *User) error {
 		return err
 	}
 	user.Remember = rememberToken
+	return nil
+}
+
+func (uv *userValidator) hmacMinBytes(user *User) error {
+	if user.Remember == "" {
+		return nil
+	}
+	n, err := rand.NBytes(user.Remember)
+	if err != nil {
+		return err
+	}
+	if n < rand.RememberTokenBytes {
+		return ErrRememberTooShort
+	}
+	return nil
+}
+
+func (uv *userValidator) hmacHashRequired(user *User) error {
+	if user.RememberHash == "" {
+		return ErrRememberRequired
+	}
 	return nil
 }
 

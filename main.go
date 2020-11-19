@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
-	"go-web-dev/models"
+	user2 "go-web-dev/models/user"
 	"net/http"
 )
 
@@ -45,9 +45,9 @@ func main() {
 	}
 }
 
-func CreateAFakeUser(us *models.UserService) {
+func CreateAFakeUser(us *user2.UserService) {
 	must(us.DestructiveReset())
-	user := &models.User{
+	user := &user2.User{
 		Name:     "Domen Skamlic",
 		Email:    "domen@skamlic.com",
 		Password: "testtest",
@@ -58,15 +58,15 @@ func CreateAFakeUser(us *models.UserService) {
 	}
 }
 
-func setupUserService(dsn string) *models.UserService {
-	us, err := models.NewUserService(dsn)
+func setupUserService(dsn string) *user2.UserService {
+	us, err := user2.NewUserService(dsn)
 	if err != nil {
 		panic(err)
 	}
 	return us
 }
 
-func setupUserController(us *models.UserService) *controllers.Users {
+func setupUserController(us *user2.UserService) *controllers.Users {
 	usersC, err := controllers.NewUsers(us)
 	if err != nil {
 		panic(err)

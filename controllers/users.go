@@ -2,13 +2,13 @@ package controllers
 
 import (
 	"fmt"
-	"go-web-dev/models"
+	user2 "go-web-dev/models/user"
 	"go-web-dev/rand"
 	"go-web-dev/views"
 	"net/http"
 )
 
-func NewUsers(us models.UserService) (*Users, error) {
+func NewUsers(us user2.UserService) (*Users, error) {
 	signUpView, err := views.NewView("bulma", "users/new")
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func NewUsers(us models.UserService) (*Users, error) {
 type Users struct {
 	NewView   *views.View
 	LoginView *views.View
-	us        models.UserService
+	us        user2.UserService
 }
 
 type UserSignUp struct {
@@ -51,7 +51,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	user := models.User{
+	user := user2.User{
 		Name:     signUpForm.Name,
 		Email:    signUpForm.Email,
 		Password: signUpForm.Password,
@@ -83,9 +83,9 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := u.us.Authenticate(form.Email, form.Password)
 	if err != nil {
 		switch err {
-		case models.ErrNotFound:
+		case user2.ErrNotFound:
 			fmt.Fprintln(w, "Invalid email address")
-		case models.ErrInvalidPassword:
+		case user2.ErrInvalidPassword:
 			fmt.Fprintln(w, "Invalid password")
 		default:
 			http.Error(w, "Something went wrong. Please try again later.", http.StatusInternalServerError)
@@ -100,7 +100,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
-func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
+func (u *Users) signIn(w http.ResponseWriter, user *user2.User) error {
 	if user.Remember == "" {
 		token, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
 		if err != nil {

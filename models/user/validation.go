@@ -16,6 +16,7 @@ var (
 	ErrInvalidPassword = errors.New("models: incorrect password provided")
 	ErrEmailRequired   = errors.New("email address is required")
 	ErrEmailInvalid    = errors.New("email address is invalid")
+	ErrEmailTaken      = errors.New("email address is already registered")
 	//ErrInvalidEmail = errors.New("models: invalid email address provided")
 )
 
@@ -68,7 +69,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 func (uv *userValidator) Create(user *User) error {
 	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacGenerateIfMissing, uv.hmacHashToken, uv.requireEmail,
-		uv.normalizeEmail, uv.validEmail)
+		uv.normalizeEmail, uv.validEmail, uv.emailIsAvailable)
 	if err != nil {
 		return err
 	}
@@ -76,7 +77,8 @@ func (uv *userValidator) Create(user *User) error {
 }
 
 func (uv *userValidator) Update(user *User) error {
-	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken, uv.requireEmail, uv.normalizeEmail, uv.validEmail)
+	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken, uv.requireEmail, uv.normalizeEmail, uv.validEmail,
+		uv.emailIsAvailable)
 	if err != nil {
 		return err
 	}
@@ -148,4 +150,15 @@ func (uv *userValidator) validEmail(user *User) error {
 		return ErrEmailInvalid
 	}
 	return nil
+}
+
+func (uv *userValidator) emailIsAvailable(user *User) error {
+	_, err := uv.ByEmail(user.Email)
+	if err == ErrNotFound {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return ErrEmailTaken
 }

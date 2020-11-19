@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func NewUsers(us *models.UserService) (*Users, error) {
+func NewUsers(us models.UserService) (*Users, error) {
 	signUpView, err := views.NewView("bulma", "users/new")
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func NewUsers(us *models.UserService) (*Users, error) {
 type Users struct {
 	NewView   *views.View
 	LoginView *views.View
-	us        *models.UserService
+	us        models.UserService
 }
 
 type UserSignUp struct {

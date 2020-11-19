@@ -40,7 +40,7 @@ type userValidator struct {
 
 func (uv *userValidator) ByEmail(email string) (*User, error) {
 	user := &User{Email: email}
-	if err := runUserValFunc(user, uv.normalizeEmail); err != nil {
+	if err := runUserValFunc(user, uv.requireEmail, uv.normalizeEmail); err != nil {
 		return nil, err
 	}
 	return uv.ByEmail(email)
@@ -55,7 +55,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 }
 
 func (uv *userValidator) Create(user *User) error {
-	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacGenerateIfMissing, uv.hmacHashToken, uv.normalizeEmail)
+	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacGenerateIfMissing, uv.hmacHashToken, uv.requireEmail, uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (uv *userValidator) Create(user *User) error {
 }
 
 func (uv *userValidator) Update(user *User) error {
-	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken, uv.normalizeEmail)
+	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken, uv.requireEmail, uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -120,5 +120,12 @@ func (uv *userValidator) checkUserID(user *User) error {
 
 func (uv *userValidator) normalizeEmail(user *User) error {
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
+	return nil
+}
+
+func (uv *userValidator) requireEmail(user *User) error {
+	if user.Email == "" {
+		return errors.New("Email address is required")
+	}
 	return nil
 }

@@ -34,6 +34,14 @@ func runUserValFunc(user *User, fns ...userValFunc) error {
 	return nil
 }
 
+func newUserValidator(udb UserDB) *userValidator {
+	return &userValidator{
+		UserDB:     udb,
+		hmac:       hash.NewHMAC(hmacSecretKey),
+		emailRegex: regexp.MustCompile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,16}$"),
+	}
+}
+
 var _ UserDB = &userValidator{}
 
 type userValidator struct {

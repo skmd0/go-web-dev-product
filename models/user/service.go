@@ -1,9 +1,7 @@
 package user
 
 import (
-	"go-web-dev/hash"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
 )
 
 type UserService interface {
@@ -16,15 +14,7 @@ func NewUserService(dsn string) (UserService, error) {
 	if err != nil {
 		return nil, err
 	}
-	hmac := hash.NewHMAC(hmacSecretKey)
-	emailRegex := regexp.MustCompile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,16}$")
-	return &userService{
-		&userValidator{
-			ug,
-			hmac,
-			emailRegex,
-		},
-	}, nil
+	return &userService{newUserValidator(ug)}, nil
 }
 
 var _ UserService = &userService{}

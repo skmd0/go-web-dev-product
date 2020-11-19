@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 var (
@@ -17,7 +18,8 @@ var (
 	ErrEmailRequired     = errors.New("email address is required")
 	ErrEmailInvalid      = errors.New("email address is invalid")
 	ErrEmailTaken        = errors.New("email address is already registered")
-	//ErrInvalidEmail = errors.New("models: invalid email address provided")
+	ErrPasswordTooShort  = errors.New("password must be at least 8 characters long")
+	ErrPasswordRequired  = errors.New("password is required")
 )
 
 const userPwPepper = "secret-user-pepper-string"
@@ -68,8 +70,9 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 }
 
 func (uv *userValidator) Create(user *User) error {
-	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacGenerateIfMissing, uv.hmacHashToken, uv.requireEmail,
-		uv.normalizeEmail, uv.validEmail, uv.emailIsAvailable)
+	err := runUserValFunc(user, uv.passRequired, uv.passMinLength, uv.bcryptPassword, uv.passHashRequired,
+		uv.hmacGenerateIfMissing, uv.hmacHashToken, uv.requireEmail, uv.normalizeEmail, uv.validEmail,
+		uv.emailIsAvailable)
 	if err != nil {
 		return err
 	}
@@ -77,8 +80,8 @@ func (uv *userValidator) Create(user *User) error {
 }
 
 func (uv *userValidator) Update(user *User) error {
-	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken, uv.requireEmail, uv.normalizeEmail, uv.validEmail,
-		uv.emailIsAvailable)
+	err := runUserValFunc(user, uv.passMinLength, uv.bcryptPassword, uv.hmacHashToken, uv.requireEmail,
+		uv.normalizeEmail, uv.validEmail, uv.emailIsAvailable)
 	if err != nil {
 		return err
 	}
@@ -161,4 +164,29 @@ func (uv *userValidator) emailIsAvailable(user *User) error {
 		return err
 	}
 	return ErrEmailTaken
+}
+
+func (uv *userValidator) passRequired(user *User) error {
+	if user.Password == "" {
+		return ErrPasswordRequired
+	}
+	return nil
+}
+
+func (uv *userValidator) passMinLength(user *User) error {
+	// when updating user data we don't necessary always want to update the password also if not provided
+	if user.Password == "" {
+		return nil
+	}
+	if utf8.RuneCountInString(user.Password) < 8 {
+		return ErrPasswordTooShort
+	}
+	return nil
+}
+
+func (uv *userValidator) passHashRequired(user *User) error {
+	if user.PasswordHash == "" {
+		return ErrPasswordRequired
+	}
+	return nil
 }

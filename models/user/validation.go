@@ -56,7 +56,7 @@ func (uv *userValidator) ByEmail(email string) (*User, error) {
 	if err := runUserValFunc(user, uv.requireEmail, uv.normalizeEmail, uv.validEmail); err != nil {
 		return nil, err
 	}
-	return uv.ByEmail(email)
+	return uv.UserDB.ByEmail(email)
 }
 
 func (uv *userValidator) ByRemember(token string) (*User, error) {

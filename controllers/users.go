@@ -2,13 +2,13 @@ package controllers
 
 import (
 	"fmt"
-	user2 "go-web-dev/models/user"
+	"go-web-dev/models/user"
 	"go-web-dev/rand"
 	"go-web-dev/views"
 	"net/http"
 )
 
-func NewUsers(us user2.UserService) (*Users, error) {
+func NewUsers(us user.UserService) (*Users, error) {
 	signUpView, err := views.NewView("bulma", "users/new")
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func NewUsers(us user2.UserService) (*Users, error) {
 type Users struct {
 	NewView   *views.View
 	LoginView *views.View
-	us        user2.UserService
+	us        user.UserService
 }
 
 type UserSignUp struct {
@@ -51,7 +51,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	user := user2.User{
+	user := user.User{
 		Name:     signUpForm.Name,
 		Email:    signUpForm.Email,
 		Password: signUpForm.Password,
@@ -81,19 +81,19 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	user, err := u.us.Authenticate(form.Email, form.Password)
+	userDB, err := u.us.Authenticate(form.Email, form.Password)
 	if err != nil {
 		switch err {
-		case user2.ErrNotFound:
+		case user.ErrNotFound:
 			fmt.Fprintln(w, "Invalid email address")
-		case user2.ErrInvalidPassword:
+		case user.ErrInvalidPassword:
 			fmt.Fprintln(w, "Invalid password")
 		default:
 			http.Error(w, "Something went wrong. Please try again later.", http.StatusInternalServerError)
 		}
 		return
 	}
-	err = u.signIn(w, user)
+	err = u.signIn(w, userDB)
 	if err != nil {
 		http.Error(w, "Something went wrong. Please try again later.", http.StatusInternalServerError)
 		return
@@ -101,7 +101,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
-func (u *Users) signIn(w http.ResponseWriter, user *user2.User) error {
+func (u *Users) signIn(w http.ResponseWriter, user *user.User) error {
 	if user.Remember == "" {
 		token, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
 		if err != nil {

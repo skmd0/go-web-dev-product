@@ -6,6 +6,7 @@ import (
 	"go-web-dev/rand"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"regexp"
 	"strings"
 )
 
@@ -13,6 +14,8 @@ var (
 	ErrNotFound        = errors.New("models: resource not found")
 	ErrInvalidID       = errors.New("models: ID provided is invalid")
 	ErrInvalidPassword = errors.New("models: incorrect password provided")
+	ErrEmailRequired   = errors.New("email address is required")
+	ErrEmailInvalid    = errors.New("email address is invalid")
 	//ErrInvalidEmail = errors.New("models: invalid email address provided")
 )
 
@@ -35,7 +38,8 @@ var _ UserDB = &userValidator{}
 
 type userValidator struct {
 	UserDB
-	hmac hash.HMAC
+	hmac       hash.HMAC
+	emailRegex *regexp.Regexp
 }
 
 func (uv *userValidator) ByEmail(email string) (*User, error) {
@@ -125,7 +129,14 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 
 func (uv *userValidator) requireEmail(user *User) error {
 	if user.Email == "" {
-		return errors.New("Email address is required")
+		return ErrEmailRequired
+	}
+	return nil
+}
+
+func (uv *userValidator) validEmail(user *User) error {
+	if !uv.emailRegex.MatchString(user.Email) {
+		return ErrEmailInvalid
 	}
 	return nil
 }

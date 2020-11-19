@@ -53,7 +53,13 @@ func NewUserService(dsn string) (UserService, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &userService{&userValidator{ug}}, nil
+	hmac := hash.NewHMAC(hmacSecretKey)
+	return &userService{
+		&userValidator{
+			ug,
+			hmac,
+		},
+	}, nil
 }
 
 var _ UserService = &userService{}
@@ -78,17 +84,81 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	}
 }
 
+type userValFunc func(*User) error
+
+func runUserValFunc(user *User, fns ...userValFunc) error {
+	for _, fn := range fns {
+		err := fn(user)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 var _ UserDB = &userValidator{}
 
 type userValidator struct {
 	UserDB
+	hmac hash.HMAC
+}
+
+func (uv *userValidator) ByRemember(token string) (*User, error) {
+	rememberHash := uv.hmac.Hash(token)
+	return uv.UserDB.ByRemember(rememberHash)
+}
+
+func (uv *userValidator) Create(user *User) error {
+	if err := runUserValFunc(user, uv.bcryptPassword); err != nil {
+		return err
+	}
+	if user.Remember == "" {
+		rememberToken, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
+		if err != nil {
+			return err
+		}
+		user.Remember = rememberToken
+	}
+	user.RememberHash = uv.hmac.Hash(user.Remember)
+	return uv.UserDB.Create(user)
+}
+
+func (uv *userValidator) Update(user *User) error {
+	if err := runUserValFunc(user, uv.bcryptPassword); err != nil {
+		return err
+	}
+	// only change RememberHash when there is a new Remember token
+	if user.Remember != "" {
+		user.RememberHash = uv.hmac.Hash(user.Remember)
+	}
+	return uv.Update(user)
+}
+
+func (uv *userValidator) Delete(id uint) error {
+	if id <= 0 {
+		return ErrInvalidID
+	}
+	return uv.Delete(id)
+}
+
+func (uv *userValidator) bcryptPassword(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+	pwBytes := []byte(user.Password + userPwPepper)
+	hashedPassword, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedPassword)
+	user.Password = ""
+	return nil
 }
 
 var _ UserDB = &userGorm{}
 
 type userGorm struct {
-	db   *gorm.DB
-	hmac hash.HMAC
+	db *gorm.DB
 }
 
 func newUserGorm(dsn string) (*userGorm, error) {
@@ -96,10 +166,8 @@ func newUserGorm(dsn string) (*userGorm, error) {
 	if err != nil {
 		return nil, err
 	}
-	hmac := hash.NewHMAC(hmacSecretKey)
 	return &userGorm{
-		db:   db,
-		hmac: hmac,
+		db: db,
 	}, nil
 }
 
@@ -111,42 +179,19 @@ func (ug *userGorm) ByEmail(email string) (*User, error) {
 	return ug.first(ug.db.Where("email = ?", email))
 }
 
-func (ug *userGorm) ByRemember(token string) (*User, error) {
-	hashedToken := ug.hmac.Hash(token)
-	return ug.first(ug.db.Where("remember_hash = ?", hashedToken))
+func (ug *userGorm) ByRemember(rememberHash string) (*User, error) {
+	return ug.first(ug.db.Where("remember_hash = ?", rememberHash))
 }
 
 func (ug *userGorm) Create(user *User) error {
-	pwBytes := []byte(user.Password + userPwPepper)
-	hashedPassword, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	user.PasswordHash = string(hashedPassword)
-	user.Password = ""
-	if user.Remember == "" {
-		rememberToken, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
-		if err != nil {
-			return err
-		}
-		user.Remember = rememberToken
-	}
-	user.RememberHash = ug.hmac.Hash(user.Remember)
 	return ug.db.Create(user).Error
 }
 
 func (ug *userGorm) Update(user *User) error {
-	// only change RememberHash when there is a new Remember token
-	if user.Remember != "" {
-		user.RememberHash = ug.hmac.Hash(user.Remember)
-	}
 	return ug.db.Save(user).Error
 }
 
 func (ug *userGorm) Delete(id uint) error {
-	if id <= 0 {
-		return ErrInvalidID
-	}
 	user := User{Model: gorm.Model{ID: id}}
 	return ug.db.Delete(&user).Error
 }

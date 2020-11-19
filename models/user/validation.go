@@ -11,12 +11,12 @@ import (
 )
 
 var (
-	ErrNotFound        = errors.New("models: resource not found")
-	ErrInvalidID       = errors.New("models: ID provided is invalid")
-	ErrInvalidPassword = errors.New("models: incorrect password provided")
-	ErrEmailRequired   = errors.New("email address is required")
-	ErrEmailInvalid    = errors.New("email address is invalid")
-	ErrEmailTaken      = errors.New("email address is already registered")
+	ErrNotFound          = errors.New("models: resource not found")
+	ErrInvalidID         = errors.New("models: ID provided is invalid")
+	ErrPasswordIncorrect = errors.New("models: incorrect password provided")
+	ErrEmailRequired     = errors.New("email address is required")
+	ErrEmailInvalid      = errors.New("email address is invalid")
+	ErrEmailTaken        = errors.New("email address is already registered")
 	//ErrInvalidEmail = errors.New("models: invalid email address provided")
 )
 

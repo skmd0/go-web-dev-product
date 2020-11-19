@@ -86,7 +86,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		switch err {
 		case user.ErrNotFound:
 			fmt.Fprintln(w, "Invalid email address")
-		case user.ErrInvalidPassword:
+		case user.ErrPasswordIncorrect:
 			fmt.Fprintln(w, "Invalid password")
 		default:
 			http.Error(w, "Something went wrong. Please try again later.", http.StatusInternalServerError)

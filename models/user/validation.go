@@ -5,6 +5,7 @@ import (
 	"go-web-dev/hash"
 	"go-web-dev/rand"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 var (
@@ -37,39 +38,33 @@ type userValidator struct {
 }
 
 func (uv *userValidator) ByRemember(token string) (*User, error) {
-	rememberHash := uv.hmac.Hash(token)
-	return uv.UserDB.ByRemember(rememberHash)
+	user := &User{Remember: token}
+	if err := runUserValFunc(user, uv.hmacHashToken); err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByRemember(user.RememberHash)
 }
 
 func (uv *userValidator) Create(user *User) error {
-	if err := runUserValFunc(user, uv.bcryptPassword); err != nil {
+	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacGenerateIfMissing, uv.hmacHashToken)
+	if err != nil {
 		return err
 	}
-	if user.Remember == "" {
-		rememberToken, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
-		if err != nil {
-			return err
-		}
-		user.Remember = rememberToken
-	}
-	user.RememberHash = uv.hmac.Hash(user.Remember)
 	return uv.UserDB.Create(user)
 }
 
 func (uv *userValidator) Update(user *User) error {
-	if err := runUserValFunc(user, uv.bcryptPassword); err != nil {
+	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken)
+	if err != nil {
 		return err
-	}
-	// only change RememberHash when there is a new Remember token
-	if user.Remember != "" {
-		user.RememberHash = uv.hmac.Hash(user.Remember)
 	}
 	return uv.Update(user)
 }
 
 func (uv *userValidator) Delete(id uint) error {
-	if id <= 0 {
-		return ErrInvalidID
+	user := &User{Model: gorm.Model{ID: id}}
+	if err := runUserValFunc(user, uv.checkUserID); err != nil {
+		return err
 	}
 	return uv.Delete(id)
 }
@@ -85,5 +80,31 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 	}
 	user.PasswordHash = string(hashedPassword)
 	user.Password = ""
+	return nil
+}
+
+func (uv *userValidator) hmacHashToken(user *User) error {
+	if user.Remember == "" {
+		return nil
+	}
+	user.RememberHash = uv.hmac.Hash(user.Remember)
+	return nil
+}
+func (uv *userValidator) hmacGenerateIfMissing(user *User) error {
+	if user.Remember != "" {
+		return nil
+	}
+	rememberToken, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
+	if err != nil {
+		return err
+	}
+	user.Remember = rememberToken
+	return nil
+}
+
+func (uv *userValidator) checkUserID(user *User) error {
+	if user.ID == 0 {
+		return ErrInvalidID
+	}
 	return nil
 }

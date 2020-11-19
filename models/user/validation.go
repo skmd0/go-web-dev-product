@@ -6,6 +6,7 @@ import (
 	"go-web-dev/rand"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"strings"
 )
 
 var (
@@ -37,6 +38,14 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
+func (uv *userValidator) ByEmail(email string) (*User, error) {
+	user := &User{Email: email}
+	if err := runUserValFunc(user, uv.normalizeEmail); err != nil {
+		return nil, err
+	}
+	return uv.ByEmail(email)
+}
+
 func (uv *userValidator) ByRemember(token string) (*User, error) {
 	user := &User{Remember: token}
 	if err := runUserValFunc(user, uv.hmacHashToken); err != nil {
@@ -46,7 +55,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 }
 
 func (uv *userValidator) Create(user *User) error {
-	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacGenerateIfMissing, uv.hmacHashToken)
+	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacGenerateIfMissing, uv.hmacHashToken, uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -54,7 +63,7 @@ func (uv *userValidator) Create(user *User) error {
 }
 
 func (uv *userValidator) Update(user *User) error {
-	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken)
+	err := runUserValFunc(user, uv.bcryptPassword, uv.hmacHashToken, uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -106,5 +115,10 @@ func (uv *userValidator) checkUserID(user *User) error {
 	if user.ID == 0 {
 		return ErrInvalidID
 	}
+	return nil
+}
+
+func (uv *userValidator) normalizeEmail(user *User) error {
+	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
 	return nil
 }

@@ -58,7 +58,8 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	err = u.us.Create(&user)
 	if err != nil {
-		http.Error(w, "Failed to create the user.", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		//http.Error(w, "Failed to create the user.", http.StatusInternalServerError)
 		return
 	}
 	err = u.signIn(w, &user)

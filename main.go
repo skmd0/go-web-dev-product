@@ -5,14 +5,14 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
-	user2 "go-web-dev/models/user"
+	"go-web-dev/models/user"
 	"net/http"
 )
 
 const (
 	host     = "localhost"
 	port     = 5432
-	user     = "postgres"
+	pq_user  = "postgres"
 	password = "testtest"
 	dbName   = "postgres"
 )
@@ -20,12 +20,11 @@ const (
 func main() {
 	var err error
 	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable",
-		host, port, user, password, dbName)
+		host, port, pq_user, password, dbName)
 
 	us := setupUserService(dsn)
-	us.AutoMigrate()
+	//us.AutoMigrate()
 	//us.DestructiveReset()
-	//CreateAFakeUser(us)
 
 	staticC := setupStaticController()
 	usersC := setupUserController(us)
@@ -45,28 +44,15 @@ func main() {
 	}
 }
 
-func CreateAFakeUser(us *user2.UserService) {
-	must(us.DestructiveReset())
-	user := &user2.User{
-		Name:     "Domen Skamlic",
-		Email:    "domen@skamlic.com",
-		Password: "testtest",
-	}
-	err := us.Create(user)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func setupUserService(dsn string) *user2.UserService {
-	us, err := user2.NewUserService(dsn)
+func setupUserService(dsn string) user.UserService {
+	us, err := user.NewUserService(dsn)
 	if err != nil {
 		panic(err)
 	}
 	return us
 }
 
-func setupUserController(us *user2.UserService) *controllers.Users {
+func setupUserController(us user.UserService) *controllers.Users {
 	usersC, err := controllers.NewUsers(us)
 	if err != nil {
 		panic(err)
@@ -80,10 +66,4 @@ func setupStaticController() *controllers.StaticViews {
 		panic(err)
 	}
 	return staticC
-}
-
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
 }

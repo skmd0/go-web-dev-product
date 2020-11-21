@@ -5,6 +5,7 @@ import (
 	"go-web-dev/models/user"
 	"go-web-dev/rand"
 	"go-web-dev/views"
+	"log"
 	"net/http"
 )
 
@@ -46,25 +47,35 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
 	var signUpForm UserSignUp
 	err := parseForm(r, &signUpForm)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLvlError,
+			Message: views.AlertMsgGeneric,
+		}
+		u.NewView.Render(w, vd)
+		return
 	}
-	user := user.User{
+	usr := user.User{
 		Name:     signUpForm.Name,
 		Email:    signUpForm.Email,
 		Password: signUpForm.Password,
 	}
-	err = u.us.Create(&user)
+	err = u.us.Create(&usr)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		//http.Error(w, "Failed to create the user.", http.StatusInternalServerError)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLvlError,
+			Message: err.Error(),
+		}
+		u.NewView.Render(w, vd)
 		return
 	}
-	err = u.signIn(w, &user)
+	err = u.signIn(w, &usr)
 	if err != nil {
-		http.Error(w, "Something went wrong. Please try again later.", http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 	http.Redirect(w, r, "/cookietest", http.StatusFound)

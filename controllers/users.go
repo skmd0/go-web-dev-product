@@ -41,10 +41,7 @@ type UserSignUp struct {
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	err := u.NewView.Render(w, nil)
-	if err != nil {
-		fmt.Println("ERR: failed to render new.gohtml")
-	}
+	u.NewView.Render(w, nil)
 }
 
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {

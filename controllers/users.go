@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"go-web-dev/models"
 	"go-web-dev/models/user"
 	"go-web-dev/rand"
 	"go-web-dev/views"
@@ -52,10 +53,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	err := parseForm(r, &signUpForm)
 	if err != nil {
 		log.Println(err)
-		vd.Alert = &views.Alert{
-			Level:   views.AlertLvlError,
-			Message: views.AlertMsgGeneric,
-		}
+		vd.SetAlert(err)
 		u.NewView.Render(w, vd)
 		return
 	}
@@ -66,10 +64,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	err = u.us.Create(&usr)
 	if err != nil {
-		vd.Alert = &views.Alert{
-			Level:   views.AlertLvlError,
-			Message: err.Error(),
-		}
+		vd.SetAlert(err)
 		u.NewView.Render(w, vd)
 		return
 	}
@@ -87,26 +82,31 @@ type LoginForm struct {
 }
 
 func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
 	form := LoginForm{}
 	if err := parseForm(r, &form); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		vd.SetAlert(err)
+		u.LoginView.Render(w, vd)
 		return
 	}
 	userDB, err := u.us.Authenticate(form.Email, form.Password)
 	if err != nil {
 		switch err {
-		case user.ErrNotFound:
-			fmt.Fprintln(w, "Invalid email address")
-		case user.ErrPasswordIncorrect:
-			fmt.Fprintln(w, "Invalid password")
+		case models.ErrNotFound:
+			vd.SetAlertErr("Invalid email address")
+		case models.ErrPasswordIncorrect:
+			vd.SetAlertErr("Invalid password")
 		default:
-			http.Error(w, "Something went wrong. Please try again later.", http.StatusInternalServerError)
+			vd.SetAlert(err)
 		}
+		u.LoginView.Render(w, vd)
 		return
 	}
 	err = u.signIn(w, userDB)
 	if err != nil {
-		http.Error(w, "Something went wrong. Please try again later.", http.StatusInternalServerError)
+		vd.SetAlert(err)
+		u.LoginView.Render(w, vd)
 		return
 	}
 	http.Redirect(w, r, "/cookietest", http.StatusFound)

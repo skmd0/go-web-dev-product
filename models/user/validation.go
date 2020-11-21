@@ -1,27 +1,14 @@
 package user
 
 import (
-	"errors"
 	"go-web-dev/hash"
+	"go-web-dev/models"
 	"go-web-dev/rand"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"regexp"
 	"strings"
 	"unicode/utf8"
-)
-
-var (
-	ErrNotFound          = errors.New("models: resource not found")
-	ErrInvalidID         = errors.New("models: ID provided is invalid")
-	ErrPasswordIncorrect = errors.New("models: incorrect password provided")
-	ErrEmailRequired     = errors.New("email address is required")
-	ErrEmailInvalid      = errors.New("email address is invalid")
-	ErrEmailTaken        = errors.New("email address is already registered")
-	ErrPasswordTooShort  = errors.New("password must be at least 8 characters long")
-	ErrPasswordRequired  = errors.New("password is required")
-	ErrRememberTooShort  = errors.New("remember token is too short")
-	ErrRememberRequired  = errors.New("remember token hash is required")
 )
 
 const userPwPepper = "secret-user-pepper-string"
@@ -140,21 +127,21 @@ func (uv *userValidator) hmacMinBytes(user *User) error {
 		return err
 	}
 	if n < rand.RememberTokenBytes {
-		return ErrRememberTooShort
+		return models.ErrRememberTooShort
 	}
 	return nil
 }
 
 func (uv *userValidator) hmacHashRequired(user *User) error {
 	if user.RememberHash == "" {
-		return ErrRememberRequired
+		return models.ErrRememberRequired
 	}
 	return nil
 }
 
 func (uv *userValidator) checkUserID(user *User) error {
 	if user.ID == 0 {
-		return ErrInvalidID
+		return models.ErrInvalidID
 	}
 	return nil
 }
@@ -166,32 +153,32 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 
 func (uv *userValidator) requireEmail(user *User) error {
 	if user.Email == "" {
-		return ErrEmailRequired
+		return models.ErrEmailRequired
 	}
 	return nil
 }
 
 func (uv *userValidator) validEmail(user *User) error {
 	if !uv.emailRegex.MatchString(user.Email) {
-		return ErrEmailInvalid
+		return models.ErrEmailInvalid
 	}
 	return nil
 }
 
 func (uv *userValidator) emailIsAvailable(user *User) error {
 	_, err := uv.ByEmail(user.Email)
-	if err == ErrNotFound {
+	if err == models.ErrNotFound {
 		return nil
 	}
 	if err != nil {
 		return err
 	}
-	return ErrEmailTaken
+	return models.ErrEmailTaken
 }
 
 func (uv *userValidator) passRequired(user *User) error {
 	if user.Password == "" {
-		return ErrPasswordRequired
+		return models.ErrPasswordRequired
 	}
 	return nil
 }
@@ -202,14 +189,14 @@ func (uv *userValidator) passMinLength(user *User) error {
 		return nil
 	}
 	if utf8.RuneCountInString(user.Password) < 8 {
-		return ErrPasswordTooShort
+		return models.ErrPasswordTooShort
 	}
 	return nil
 }
 
 func (uv *userValidator) passHashRequired(user *User) error {
 	if user.PasswordHash == "" {
-		return ErrPasswordRequired
+		return models.ErrPasswordRequired
 	}
 	return nil
 }

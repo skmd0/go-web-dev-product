@@ -5,6 +5,8 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
+	"go-web-dev/models"
+	"go-web-dev/models/gallery"
 	"go-web-dev/models/user"
 	"net/http"
 )
@@ -21,13 +23,16 @@ func main() {
 	var err error
 	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable",
 		host, port, pq_user, password, dbName)
-
-	us := setupUserService(dsn)
-	//us.AutoMigrate()
-	//us.DestructiveReset()
+	services, err := models.NewServices(dsn)
+	if err != nil {
+		panic(err)
+	}
+	//services.AutoMigrate()
+	//services.DestructiveReset()
 
 	staticC := setupStaticController()
-	usersC := setupUserController(us)
+	usersC := setupUserController(services.User)
+	galleryC := setupGalleryController(services.Gallery)
 
 	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
@@ -37,19 +42,18 @@ func main() {
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
+
+	// Gallery routes
+	r.Handle("/gallery/new", galleryC.New).Methods("GET")
+	r.HandleFunc("/gallery", galleryC.Create).Methods("POST")
+	//r.HandleFunc("/gallery/edit/:id", galleryC.Edit).Methods("GET")
+	//r.HandleFunc("/gallery/edit/:id", galleryC.Update).Methods("POST")
+
 	err = http.ListenAndServe(":3000", r)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to start a HTTP server: %s", err.Error())
 		panic(errMsg)
 	}
-}
-
-func setupUserService(dsn string) user.UserService {
-	us, err := user.NewUserService(dsn)
-	if err != nil {
-		panic(err)
-	}
-	return us
 }
 
 func setupUserController(us user.UserService) *controllers.Users {
@@ -58,6 +62,14 @@ func setupUserController(us user.UserService) *controllers.Users {
 		panic(err)
 	}
 	return usersC
+}
+
+func setupGalleryController(gs gallery.GalleryService) *controllers.Gallery {
+	galleryC, err := controllers.NewGallery(gs)
+	if err != nil {
+		panic(err)
+	}
+	return galleryC
 }
 
 func setupStaticController() *controllers.StaticViews {

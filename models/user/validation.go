@@ -1,8 +1,8 @@
 package user
 
 import (
+	"go-web-dev/errs"
 	"go-web-dev/hash"
-	"go-web-dev/models"
 	"go-web-dev/rand"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -127,21 +127,21 @@ func (uv *userValidator) hmacMinBytes(user *User) error {
 		return err
 	}
 	if n < rand.RememberTokenBytes {
-		return models.ErrRememberTooShort
+		return errs.ErrRememberTooShort
 	}
 	return nil
 }
 
 func (uv *userValidator) hmacHashRequired(user *User) error {
 	if user.RememberHash == "" {
-		return models.ErrRememberRequired
+		return errs.ErrRememberRequired
 	}
 	return nil
 }
 
 func (uv *userValidator) checkUserID(user *User) error {
 	if user.ID == 0 {
-		return models.ErrInvalidID
+		return errs.ErrInvalidID
 	}
 	return nil
 }
@@ -153,32 +153,32 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 
 func (uv *userValidator) requireEmail(user *User) error {
 	if user.Email == "" {
-		return models.ErrEmailRequired
+		return errs.ErrEmailRequired
 	}
 	return nil
 }
 
 func (uv *userValidator) validEmail(user *User) error {
 	if !uv.emailRegex.MatchString(user.Email) {
-		return models.ErrEmailInvalid
+		return errs.ErrEmailInvalid
 	}
 	return nil
 }
 
 func (uv *userValidator) emailIsAvailable(user *User) error {
 	_, err := uv.ByEmail(user.Email)
-	if err == models.ErrNotFound {
+	if err == errs.ErrNotFound {
 		return nil
 	}
 	if err != nil {
 		return err
 	}
-	return models.ErrEmailTaken
+	return errs.ErrEmailTaken
 }
 
 func (uv *userValidator) passRequired(user *User) error {
 	if user.Password == "" {
-		return models.ErrPasswordRequired
+		return errs.ErrPasswordRequired
 	}
 	return nil
 }
@@ -189,14 +189,14 @@ func (uv *userValidator) passMinLength(user *User) error {
 		return nil
 	}
 	if utf8.RuneCountInString(user.Password) < 8 {
-		return models.ErrPasswordTooShort
+		return errs.ErrPasswordTooShort
 	}
 	return nil
 }
 
 func (uv *userValidator) passHashRequired(user *User) error {
 	if user.PasswordHash == "" {
-		return models.ErrPasswordRequired
+		return errs.ErrPasswordRequired
 	}
 	return nil
 }

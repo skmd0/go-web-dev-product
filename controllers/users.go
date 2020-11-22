@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"go-web-dev/models"
+	"go-web-dev/errs"
 	"go-web-dev/models/user"
 	"go-web-dev/rand"
 	"go-web-dev/views"
@@ -90,9 +90,9 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	userDB, err := u.us.Authenticate(form.Email, form.Password)
 	if err != nil {
 		switch err {
-		case models.ErrNotFound:
+		case errs.ErrNotFound:
 			vd.SetAlertErr("Invalid email address")
-		case models.ErrPasswordIncorrect:
+		case errs.ErrPasswordIncorrect:
 			vd.SetAlertErr("Invalid password")
 		default:
 			vd.SetAlert(err)

@@ -1,8 +1,7 @@
 package user
 
 import (
-	"go-web-dev/models"
-	"gorm.io/driver/postgres"
+	"go-web-dev/errs"
 	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -25,25 +24,12 @@ type UserDB interface {
 	Create(user *User) error
 	Update(user *User) error
 	Delete(id uint) error
-
-	AutoMigrate() error
-	DestructiveReset() error
 }
 
 var _ UserDB = &userGorm{}
 
 type userGorm struct {
 	db *gorm.DB
-}
-
-func newUserGorm(dsn string) (*userGorm, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
-	return &userGorm{
-		db: db,
-	}, nil
 }
 
 func (ug *userGorm) ByID(id uint) (*User, error) {
@@ -71,22 +57,6 @@ func (ug *userGorm) Delete(id uint) error {
 	return ug.db.Delete(&user).Error
 }
 
-func (ug *userGorm) DestructiveReset() error {
-	err := ug.db.Migrator().DropTable(&User{})
-	if err != nil {
-		return err
-	}
-	return ug.AutoMigrate()
-}
-
-func (ug *userGorm) AutoMigrate() error {
-	err := ug.db.Migrator().AutoMigrate(&User{})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (ug *userGorm) first(db *gorm.DB) (*User, error) {
 	var user User
 	err := db.First(&user).Error
@@ -94,7 +64,7 @@ func (ug *userGorm) first(db *gorm.DB) (*User, error) {
 	case nil:
 		return &user, nil
 	case gorm.ErrRecordNotFound:
-		return nil, models.ErrNotFound
+		return nil, errs.ErrNotFound
 	default:
 		return nil, err
 	}

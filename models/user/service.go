@@ -1,8 +1,9 @@
 package user
 
 import (
-	"go-web-dev/models"
+	"go-web-dev/errs"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserService interface {
@@ -10,12 +11,10 @@ type UserService interface {
 	UserDB
 }
 
-func NewUserService(dsn string) (UserService, error) {
-	ug, err := newUserGorm(dsn)
-	if err != nil {
-		return nil, err
-	}
-	return &userService{newUserValidator(ug)}, nil
+func NewUserService(db *gorm.DB) UserService {
+	ug := &userGorm{db}
+	uv := newUserValidator(ug)
+	return &userService{uv}
 }
 
 var _ UserService = &userService{}
@@ -32,7 +31,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+userPwPepper))
 	switch err {
 	case bcrypt.ErrMismatchedHashAndPassword:
-		return nil, models.ErrPasswordIncorrect
+		return nil, errs.ErrPasswordIncorrect
 	case nil:
 		return foundUser, nil
 	default:

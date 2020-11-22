@@ -1,5 +1,7 @@
 package views
 
+import "log"
+
 const (
 	AlertLvlSuccess = "primary"
 	AlertLvlInfo    = "info"
@@ -34,6 +36,7 @@ func (d *Data) SetAlert(err error) {
 }
 
 func (d *Data) SetAlertErr(msg string) {
+	log.Println(msg)
 	d.Alert = &Alert{
 		Level:   AlertLvlError,
 		Message: msg,

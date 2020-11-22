@@ -1,6 +1,7 @@
 package user
 
 import (
+	"go-web-dev/models"
 	"gorm.io/driver/postgres"
 	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -93,7 +94,7 @@ func (ug *userGorm) first(db *gorm.DB) (*User, error) {
 	case nil:
 		return &user, nil
 	case gorm.ErrRecordNotFound:
-		return nil, ErrNotFound
+		return nil, models.ErrNotFound
 	default:
 		return nil, err
 	}

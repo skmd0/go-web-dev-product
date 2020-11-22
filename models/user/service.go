@@ -1,6 +1,7 @@
 package user
 
 import (
+	"go-web-dev/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -31,7 +32,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+userPwPepper))
 	switch err {
 	case bcrypt.ErrMismatchedHashAndPassword:
-		return nil, ErrPasswordIncorrect
+		return nil, models.ErrPasswordIncorrect
 	case nil:
 		return foundUser, nil
 	default:

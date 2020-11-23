@@ -74,7 +74,7 @@ func (uv *userValidator) Update(user *User) error {
 	if err != nil {
 		return err
 	}
-	return uv.Update(user)
+	return uv.UserDB.Update(user)
 }
 
 func (uv *userValidator) Delete(id uint) error {

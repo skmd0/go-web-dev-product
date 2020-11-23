@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
+	"go-web-dev/middleware"
 	"go-web-dev/models"
 	"go-web-dev/models/gallery"
 	"go-web-dev/models/user"
@@ -33,6 +34,7 @@ func main() {
 	staticC := setupStaticController()
 	usersC := setupUserController(services.User)
 	galleryC := setupGalleryController(services.Gallery)
+	requireUserMw := middleware.RequireUser{UserService: services.User}
 
 	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
@@ -44,8 +46,8 @@ func main() {
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 
 	// Gallery routes
-	r.Handle("/gallery/new", galleryC.New).Methods("GET")
-	r.HandleFunc("/gallery", galleryC.Create).Methods("POST")
+	r.Handle("/gallery/new", requireUserMw.Apply(galleryC.New)).Methods("GET")
+	r.HandleFunc("/gallery", requireUserMw.ApplyFn(galleryC.Create)).Methods("POST")
 	//r.HandleFunc("/gallery/edit/:id", galleryC.Edit).Methods("GET")
 	//r.HandleFunc("/gallery/edit/:id", galleryC.Update).Methods("POST")
 

@@ -166,14 +166,18 @@ func (uv *userValidator) validEmail(user *User) error {
 }
 
 func (uv *userValidator) emailIsAvailable(user *User) error {
-	_, err := uv.ByEmail(user.Email)
+	existing, err := uv.ByEmail(user.Email)
 	if err == errs.ErrNotFound {
 		return nil
 	}
 	if err != nil {
 		return err
 	}
-	return errs.ErrEmailTaken
+	// we found the user with this email address
+	if user.ID != existing.ID {
+		return errs.ErrEmailTaken
+	}
+	return nil
 }
 
 func (uv *userValidator) passRequired(user *User) error {

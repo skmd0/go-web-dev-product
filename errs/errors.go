@@ -1,6 +1,8 @@
 package errs
 
-import "strings"
+import (
+	"strings"
+)
 
 const (
 	ErrNotFound          modelError = "models: resource not found"
@@ -21,7 +23,7 @@ const (
 type modelError string
 
 func (me modelError) Error() string {
-	return "models: " + strings.ToLower(me.Error())
+	return "models: " + strings.ToLower(string(me))
 }
 
 func (me modelError) Public() string {
@@ -31,5 +33,5 @@ func (me modelError) Public() string {
 type privateError string
 
 func (pe privateError) Error() string {
-	return "models: " + strings.ToLower(pe.Error())
+	return "models: " + strings.ToLower(string(pe))
 }

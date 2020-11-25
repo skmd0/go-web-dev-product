@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"go-web-dev/context"
 	"go-web-dev/models/gallery"
 	"go-web-dev/views"
 	"log"
@@ -37,7 +38,15 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 		g.New.Render(w, vd)
 		return
 	}
-	glr := gallery.Gallery{Title: galleryForm.Title}
+	user := context.User(r.Context())
+	if user == nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	glr := gallery.Gallery{
+		UserID: user.ID,
+		Title:  galleryForm.Title,
+	}
 	err = g.gs.Create(&glr)
 	if err != nil {
 		vd.SetAlert(err)

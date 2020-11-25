@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"go-web-dev/context"
 	"go-web-dev/models/user"
 	"log"
 	"net/http"
@@ -29,6 +30,9 @@ func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
+		ctx := r.Context()
+		ctx = context.WithUser(ctx, usr)
+		r = r.WithContext(ctx)
 		fmt.Println("User found:", usr)
 		next(w, r)
 	})

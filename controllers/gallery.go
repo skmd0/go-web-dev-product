@@ -13,16 +13,24 @@ func NewGallery(gs gallery.GalleryService) (*Gallery, error) {
 	if err != nil {
 		return nil, err
 	}
+	showView, err := views.NewView("bulma", "gallery/show")
+	if err != nil {
+		return nil, err
+	}
 	return &Gallery{
-		New: newGalleryView,
-		gs:  gs,
+		New:      newGalleryView,
+		ShowView: showView,
+		gs:       gs,
+		r:        r,
 	}, nil
 
 }
 
 type Gallery struct {
-	New *views.View
-	gs  gallery.GalleryService
+	New      *views.View
+	ShowView *views.View
+	gs       gallery.GalleryService
+	r        *mux.Router
 }
 type GalleryForm struct {
 	Title string `schema:"title"`

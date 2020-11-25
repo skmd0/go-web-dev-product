@@ -31,12 +31,12 @@ func main() {
 	//services.AutoMigrate()
 	//services.DestructiveReset()
 
+	r := mux.NewRouter()
 	staticC := setupStaticController()
 	usersC := setupUserController(services.User)
-	galleryC := setupGalleryController(services.Gallery)
+	galleryC := setupGalleryController(services.Gallery, r)
 	requireUserMw := middleware.RequireUser{UserService: services.User}
 
-	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
 	r.HandleFunc("/signup", usersC.New).Methods("GET")
@@ -48,6 +48,7 @@ func main() {
 	// Gallery routes
 	r.Handle("/gallery/new", requireUserMw.Apply(galleryC.New)).Methods("GET")
 	r.HandleFunc("/gallery", requireUserMw.ApplyFn(galleryC.Create)).Methods("POST")
+	r.HandleFunc("/gallery/{id:[0-9]+}", galleryC.Show).Methods("GET").Name(controllers.GalleryShowName)
 	//r.HandleFunc("/gallery/edit/:id", galleryC.Edit).Methods("GET")
 	//r.HandleFunc("/gallery/edit/:id", galleryC.Update).Methods("POST")
 
@@ -66,8 +67,8 @@ func setupUserController(us user.UserService) *controllers.Users {
 	return usersC
 }
 
-func setupGalleryController(gs gallery.GalleryService) *controllers.Gallery {
-	galleryC, err := controllers.NewGallery(gs)
+func setupGalleryController(gs gallery.GalleryService, r *mux.Router) *controllers.Gallery {
+	galleryC, err := controllers.NewGallery(gs, r)
 	if err != nil {
 		panic(err)
 	}

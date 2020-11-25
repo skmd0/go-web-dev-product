@@ -1,14 +1,21 @@
 package controllers
 
 import (
+	"github.com/gorilla/mux"
 	"go-web-dev/context"
+	"go-web-dev/errs"
 	"go-web-dev/models/gallery"
 	"go-web-dev/views"
 	"log"
 	"net/http"
+	"strconv"
 )
 
-func NewGallery(gs gallery.GalleryService) (*Gallery, error) {
+const (
+	GalleryShowName = "show_gallery"
+)
+
+func NewGallery(gs gallery.GalleryService, r *mux.Router) (*Gallery, error) {
 	newGalleryView, err := views.NewView("bulma", "gallery/new")
 	if err != nil {
 		return nil, err
@@ -61,5 +68,36 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 		g.New.Render(w, vd)
 		return
 	}
-	http.Redirect(w, r, "/gallery/:id", http.StatusFound)
+	glrStrID := strconv.Itoa(int(glr.ID))
+	url, err := g.r.Get(GalleryShowName).URL("id", glrStrID)
+	if err != nil {
+		// todo make this go to the gallery page
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, url.Path, http.StatusFound)
+}
+
+// GET /gallery/:id
+func (g *Gallery) Show(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	strID := vars["id"]
+	id, err := strconv.Atoi(strID)
+	if err != nil {
+		http.Error(w, "Invalid gallery ID.", http.StatusNotFound)
+		return
+	}
+	glr, err := g.gs.ByID(uint(id))
+	if err != nil {
+		switch err {
+		case errs.ErrNotFound:
+			http.Error(w, "Gallery not found.", http.StatusNotFound)
+		default:
+			http.Error(w, "Oops! Something went wrong.", http.StatusInternalServerError)
+		}
+		return
+	}
+	var vd views.Data
+	vd.Yield = glr
+	g.ShowView.Render(w, vd)
 }

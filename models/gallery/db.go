@@ -1,6 +1,9 @@
 package gallery
 
-import "gorm.io/gorm"
+import (
+	"go-web-dev/errs"
+	"gorm.io/gorm"
+)
 
 type Gallery struct {
 	gorm.Model
@@ -9,6 +12,7 @@ type Gallery struct {
 }
 
 type GalleryDB interface {
+	ByID(id uint) (*Gallery, error)
 	Create(gallery *Gallery) error
 }
 
@@ -18,4 +22,21 @@ type galleryGorm struct {
 
 func (gg *galleryGorm) Create(gallery *Gallery) error {
 	return gg.db.Create(gallery).Error
+}
+
+func (gg *galleryGorm) ByID(id uint) (*Gallery, error) {
+	return gg.first(gg.db.Where("id = ?", id))
+}
+
+func (gg *galleryGorm) first(db *gorm.DB) (*Gallery, error) {
+	var gallery Gallery
+	err := db.First(&gallery).Error
+	switch err {
+	case nil:
+		return &gallery, nil
+	case gorm.ErrRecordNotFound:
+		return nil, errs.ErrNotFound
+	default:
+		return nil, err
+	}
 }

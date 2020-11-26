@@ -20,6 +20,14 @@ func (gv *galleryValidator) Create(gallery *Gallery) error {
 	return gv.GalleryDB.Create(gallery)
 }
 
+func (gv *galleryValidator) Update(gallery *Gallery) error {
+	err := runGalleryValFunc(gallery, gv.titleRequired, gv.userIDRequired)
+	if err != nil {
+		return err
+	}
+	return gv.GalleryDB.Update(gallery)
+}
+
 func (gv *galleryValidator) userIDRequired(gallery *Gallery) error {
 	if gallery.UserID <= 0 {
 		return errs.ErrUserIDRequired

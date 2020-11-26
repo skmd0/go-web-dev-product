@@ -14,6 +14,7 @@ type Gallery struct {
 type GalleryDB interface {
 	ByID(id uint) (*Gallery, error)
 	Create(gallery *Gallery) error
+	Update(gallery *Gallery) error
 }
 
 type galleryGorm struct {
@@ -22,6 +23,10 @@ type galleryGorm struct {
 
 func (gg *galleryGorm) Create(gallery *Gallery) error {
 	return gg.db.Create(gallery).Error
+}
+
+func (gg *galleryGorm) Update(gallery *Gallery) error {
+	return gg.db.Save(gallery).Error
 }
 
 func (gg *galleryGorm) ByID(id uint) (*Gallery, error) {

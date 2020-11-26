@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"go-web-dev/context"
 	"go-web-dev/errs"
@@ -108,6 +109,39 @@ func (g *Gallery) Edit(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 	vd.Yield = glr
 	g.EditView.Render(w, vd)
+}
+
+// GET /gallery/:id/update
+func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
+	glr, err := g.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+	user := context.User(r.Context())
+	if user == nil || glr.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+	var vd views.Data
+	var form GalleryForm
+	vd.Yield = glr
+	err = parseForm(r, &form)
+	if err != nil {
+		log.Println(err)
+		vd.SetAlert(err)
+		g.EditView.Render(w, vd)
+		return
+	}
+	glr.Title = form.Title
+	err = g.gs.Update(glr)
+	if err != nil {
+		log.Println(err)
+		vd.SetAlert(err)
+		g.EditView.Render(w, vd)
+		return
+	}
+	url := fmt.Sprintf("/gallery/%v", glr.ID)
+	http.Redirect(w, r, url, http.StatusFound)
 }
 
 func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.Gallery, error) {

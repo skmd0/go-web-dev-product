@@ -49,9 +49,9 @@ func main() {
 	r.Handle("/gallery/new", requireUserMw.Apply(galleryC.New)).Methods("GET")
 	r.HandleFunc("/gallery", requireUserMw.ApplyFn(galleryC.Create)).Methods("POST")
 	r.HandleFunc("/gallery/{id:[0-9]+}/edit", requireUserMw.ApplyFn(galleryC.Edit)).Methods("GET")
+	r.HandleFunc("/gallery/{id:[0-9]+}/update", requireUserMw.ApplyFn(galleryC.Update)).Methods("POST")
 	r.HandleFunc("/gallery/{id:[0-9]+}", galleryC.Show).Methods("GET").
 		Name(controllers.GalleryShowName)
-	//r.HandleFunc("/gallery/{id:[0-9]+}/update", galleryC.Update).Methods("GET").Name(controllers.GalleryShowName)
 
 	err = http.ListenAndServe(":3000", r)
 	if err != nil {

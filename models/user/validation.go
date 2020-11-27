@@ -82,7 +82,7 @@ func (uv *userValidator) Delete(id uint) error {
 	if err := runUserValFunc(user, uv.checkUserID); err != nil {
 		return err
 	}
-	return uv.Delete(id)
+	return uv.UserDB.Delete(id)
 }
 
 func (uv *userValidator) bcryptPassword(user *User) error {

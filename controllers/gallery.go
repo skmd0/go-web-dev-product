@@ -144,6 +144,29 @@ func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusFound)
 }
 
+// GET /gallery/:id/delete
+func (g *Gallery) Delete(w http.ResponseWriter, r *http.Request) {
+	glr, err := g.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+	user := context.User(r.Context())
+	if user == nil || glr.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+	var vd views.Data
+	err = g.gs.Delete(glr.ID)
+	if err != nil {
+		log.Println(err)
+		vd.SetAlert(err)
+		g.EditView.Render(w, vd)
+		return
+	}
+	// todo redirect to gallery index page
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
 func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.Gallery, error) {
 	vars := mux.Vars(r)
 	strID := vars["id"]

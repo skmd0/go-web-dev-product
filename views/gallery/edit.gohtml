@@ -16,5 +16,15 @@
                 </div>
             </div>
         </form>
+        <form method="post" action="/gallery/{{.ID}}/delete">
+            <div style="padding: 12px 14px">
+                <h2 class="title">Danger</h2>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-danger is-right" type="submit">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 {{end}}

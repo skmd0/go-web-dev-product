@@ -1,6 +1,9 @@
 package gallery
 
-import "go-web-dev/errs"
+import (
+	"go-web-dev/errs"
+	"gorm.io/gorm"
+)
 
 func newGalleryValidator(gdb GalleryDB) *galleryValidator {
 	return &galleryValidator{
@@ -28,6 +31,14 @@ func (gv *galleryValidator) Update(gallery *Gallery) error {
 	return gv.GalleryDB.Update(gallery)
 }
 
+func (gv *galleryValidator) Delete(id uint) error {
+	glr := &Gallery{Model: gorm.Model{ID: id}}
+	if err := runGalleryValFunc(glr, gv.checkGalleryID); err != nil {
+		return err
+	}
+	return gv.GalleryDB.Delete(id)
+}
+
 func (gv *galleryValidator) userIDRequired(gallery *Gallery) error {
 	if gallery.UserID <= 0 {
 		return errs.ErrUserIDRequired
@@ -38,6 +49,13 @@ func (gv *galleryValidator) userIDRequired(gallery *Gallery) error {
 func (gv *galleryValidator) titleRequired(gallery *Gallery) error {
 	if gallery.Title == "" {
 		return errs.ErrTitleRequired
+	}
+	return nil
+}
+
+func (gv *galleryValidator) checkGalleryID(glr *Gallery) error {
+	if glr.ID == 0 {
+		return errs.ErrInvalidID
 	}
 	return nil
 }

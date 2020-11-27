@@ -28,8 +28,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//services.AutoMigrate()
+
 	//services.DestructiveReset()
+	err = services.AutoMigrate()
+	if err != nil {
+		panic(err)
+	}
 
 	r := mux.NewRouter()
 	staticC := setupStaticController()

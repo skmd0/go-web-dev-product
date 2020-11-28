@@ -70,7 +70,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, "/cookietest", http.StatusFound)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 type LoginForm struct {
@@ -106,7 +106,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		u.LoginView.Render(w, vd)
 		return
 	}
-	http.Redirect(w, r, "/cookietest", http.StatusFound)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 func (u *Users) signIn(w http.ResponseWriter, user *user.User) error {
@@ -128,20 +128,4 @@ func (u *Users) signIn(w http.ResponseWriter, user *user.User) error {
 	}
 	http.SetCookie(w, &cookie)
 	return nil
-}
-
-func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("remember_token")
-	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-	user, err := u.us.ByRemember(cookie.Value)
-	if err != nil {
-		errMsg := fmt.Sprintf("Unable to find the user: %s", err.Error())
-		http.Error(w, errMsg, http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprintln(w, user)
 }

@@ -1,0 +1,36 @@
+{{define "yield"}}
+    <div class="panel control">
+        <div class="panel-heading">
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <h2 class="title is-5" style="padding-top:10px;">Your galleries</h2>
+                </div>
+                <p class="control">
+                    <a href="/gallery/new">
+                        <button class="button is-primary">New gallery</button>
+                    </a>
+                </p>
+            </div>
+        </div>
+        <div style="padding: 6px 8px">
+            <table class="table is-stripped is-fullwidth">
+                <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range .}}
+                    <tr>
+                        <td><a href="/gallery/{{.ID}}">{{.Title}}</a></td>
+                        <td><a href="/gallery/{{.ID}}/edit">Edit</a></td>
+                        <td><a href="/gallery/{{.ID}}/delete">Delete</a></td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{{end}}

@@ -14,6 +14,7 @@ import (
 
 const (
 	GalleryShowName = "show_gallery"
+	GalleryEditName = "edit_gallery"
 )
 
 func NewGallery(gs gallery.GalleryService, r *mux.Router) (*Gallery, error) {
@@ -29,21 +30,27 @@ func NewGallery(gs gallery.GalleryService, r *mux.Router) (*Gallery, error) {
 	if err != nil {
 		return nil, err
 	}
+	indexView, err := views.NewView("bulma", "gallery/index")
+	if err != nil {
+		return nil, err
+	}
 	return &Gallery{
-		New:      newGalleryView,
-		ShowView: showView,
-		EditView: editView,
-		gs:       gs,
-		r:        r,
+		New:       newGalleryView,
+		ShowView:  showView,
+		EditView:  editView,
+		IndexView: indexView,
+		gs:        gs,
+		r:         r,
 	}, nil
 }
 
 type Gallery struct {
-	New      *views.View
-	ShowView *views.View
-	EditView *views.View
-	gs       gallery.GalleryService
-	r        *mux.Router
+	New       *views.View
+	ShowView  *views.View
+	EditView  *views.View
+	IndexView *views.View
+	gs        gallery.GalleryService
+	r         *mux.Router
 }
 type GalleryForm struct {
 	Title string `schema:"title"`
@@ -75,13 +82,25 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	glrStrID := strconv.Itoa(int(glr.ID))
-	url, err := g.r.Get(GalleryShowName).URL("id", glrStrID)
+	url, err := g.r.Get(GalleryEditName).URL("id", glrStrID)
 	if err != nil {
-		// todo make this go to the gallery page
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, "/galleries", http.StatusFound)
 		return
 	}
 	http.Redirect(w, r, url.Path, http.StatusFound)
+}
+
+// GET /galleries
+func (g *Gallery) Index(w http.ResponseWriter, r *http.Request) {
+	user := context.User(r.Context())
+	galleries, err := g.gs.ByUserID(user.ID)
+	if err != nil {
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+	var vd views.Data
+	vd.Yield = galleries
+	g.IndexView.Render(w, vd)
 }
 
 // GET /gallery/:id
@@ -163,8 +182,7 @@ func (g *Gallery) Delete(w http.ResponseWriter, r *http.Request) {
 		g.EditView.Render(w, vd)
 		return
 	}
-	// todo redirect to gallery index page
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.Gallery, error) {

@@ -16,8 +16,10 @@
         <div id="navbarBasicExample" class="navbar-menu">
             <div class="navbar-start">
                 <a class="navbar-item" href="/"> Home </a>
-
                 <a class="navbar-item" href="/contact"> Contact </a>
+                {{if .User}}
+                    <a class="navbar-item" href="/galleries"> Galleries </a>
+                {{end}}
             </div>
 
             <div class="navbar-end">

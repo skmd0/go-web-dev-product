@@ -1,6 +1,9 @@
 package views
 
-import "log"
+import (
+	"go-web-dev/models/user"
+	"log"
+)
 
 const (
 	AlertLvlSuccess = "primary"
@@ -18,6 +21,7 @@ type Alert struct {
 
 type Data struct {
 	Alert *Alert
+	User  *user.User
 	Yield interface{}
 }
 

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"go-web-dev/errs"
 	"go-web-dev/models/user"
 	"go-web-dev/rand"
@@ -41,7 +40,7 @@ type UserSignUp struct {
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	u.NewView.Render(w, nil)
+	u.NewView.Render(w, r, nil)
 }
 
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +50,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		u.NewView.Render(w, vd)
+		u.NewView.Render(w, r, vd)
 		return
 	}
 	usr := user.User{
@@ -62,7 +61,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	err = u.us.Create(&usr)
 	if err != nil {
 		vd.SetAlert(err)
-		u.NewView.Render(w, vd)
+		u.NewView.Render(w, r, vd)
 		return
 	}
 	err = u.signIn(w, &usr)
@@ -84,7 +83,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(r, &form); err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		u.LoginView.Render(w, vd)
+		u.LoginView.Render(w, r, vd)
 		return
 	}
 	userDB, err := u.us.Authenticate(form.Email, form.Password)
@@ -97,13 +96,13 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		default:
 			vd.SetAlert(err)
 		}
-		u.LoginView.Render(w, vd)
+		u.LoginView.Render(w, r, vd)
 		return
 	}
 	err = u.signIn(w, userDB)
 	if err != nil {
 		vd.SetAlert(err)
-		u.LoginView.Render(w, vd)
+		u.LoginView.Render(w, r, vd)
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)

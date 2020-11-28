@@ -39,7 +39,8 @@ func main() {
 	staticC := setupStaticController()
 	usersC := setupUserController(services.User)
 	galleryC := setupGalleryController(services.Gallery, r)
-	requireUserMw := middleware.RequireUser{UserService: services.User}
+	userMw := middleware.User{UserService: services.User}
+	requireUserMw := middleware.RequireUser{User: userMw}
 
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
@@ -59,7 +60,7 @@ func main() {
 	r.HandleFunc("/gallery/{id:[0-9]+}", galleryC.Show).Methods("GET").
 		Name(controllers.GalleryShowName)
 
-	err = http.ListenAndServe(":3000", r)
+	err = http.ListenAndServe(":3000", userMw.Apply(r))
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to start a HTTP server: %s", err.Error())
 		panic(errMsg)

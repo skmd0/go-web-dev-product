@@ -63,7 +63,7 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		g.New.Render(w, vd)
+		g.New.Render(w, r, vd)
 		return
 	}
 	user := context.User(r.Context())
@@ -78,7 +78,7 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 	err = g.gs.Create(&glr)
 	if err != nil {
 		vd.SetAlert(err)
-		g.New.Render(w, vd)
+		g.New.Render(w, r, vd)
 		return
 	}
 	glrStrID := strconv.Itoa(int(glr.ID))
@@ -100,7 +100,7 @@ func (g *Gallery) Index(w http.ResponseWriter, r *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = galleries
-	g.IndexView.Render(w, vd)
+	g.IndexView.Render(w, r, vd)
 }
 
 // GET /gallery/:id
@@ -111,7 +111,7 @@ func (g *Gallery) Show(w http.ResponseWriter, r *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = glr
-	g.ShowView.Render(w, vd)
+	g.ShowView.Render(w, r, vd)
 }
 
 // GET /gallery/:id/edit
@@ -127,7 +127,7 @@ func (g *Gallery) Edit(w http.ResponseWriter, r *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = glr
-	g.EditView.Render(w, vd)
+	g.EditView.Render(w, r, vd)
 }
 
 // GET /gallery/:id/update
@@ -148,7 +148,7 @@ func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		g.EditView.Render(w, vd)
+		g.EditView.Render(w, r, vd)
 		return
 	}
 	glr.Title = form.Title
@@ -156,7 +156,7 @@ func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		g.EditView.Render(w, vd)
+		g.EditView.Render(w, r, vd)
 		return
 	}
 	url := fmt.Sprintf("/gallery/%v", glr.ID)
@@ -179,7 +179,7 @@ func (g *Gallery) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		g.EditView.Render(w, vd)
+		g.EditView.Render(w, r, vd)
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)

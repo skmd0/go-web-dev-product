@@ -7,9 +7,8 @@ import (
 	"go-web-dev/controllers"
 	"go-web-dev/middleware"
 	"go-web-dev/models"
-	"go-web-dev/models/gallery"
-	"go-web-dev/models/user"
 	"net/http"
+	"os"
 )
 
 const (
@@ -21,24 +20,43 @@ const (
 )
 
 func main() {
+	if err := run(); err != nil {
+		_, err := fmt.Fprintf(os.Stderr, "%s\n", err)
+		panic(err)
+	}
+}
+
+func run() error {
 	var err error
 	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable",
 		host, port, pq_user, password, dbName)
 	services, err := models.NewServices(dsn)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	//services.DestructiveReset()
 	err = services.AutoMigrate()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	r := mux.NewRouter()
-	staticC := setupStaticController()
-	usersC := setupUserController(services.User)
-	galleryC := setupGalleryController(services.Gallery, r)
+	staticC, err := controllers.NewStatic()
+	if err != nil {
+		panic(err)
+	}
+
+	usersC, err := controllers.NewUsers(services.User)
+	if err != nil {
+		panic(err)
+	}
+
+	galleryC, err := controllers.NewGallery(services.Gallery, r)
+	if err != nil {
+		panic(err)
+	}
+
 	userMw := middleware.User{UserService: services.User}
 	requireUserMw := middleware.RequireUser{User: userMw}
 
@@ -62,31 +80,7 @@ func main() {
 
 	err = http.ListenAndServe(":3000", userMw.Apply(r))
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to start a HTTP server: %s", err.Error())
-		panic(errMsg)
+		return err
 	}
-}
-
-func setupUserController(us user.UserService) *controllers.Users {
-	usersC, err := controllers.NewUsers(us)
-	if err != nil {
-		panic(err)
-	}
-	return usersC
-}
-
-func setupGalleryController(gs gallery.GalleryService, r *mux.Router) *controllers.Gallery {
-	galleryC, err := controllers.NewGallery(gs, r)
-	if err != nil {
-		panic(err)
-	}
-	return galleryC
-}
-
-func setupStaticController() *controllers.StaticViews {
-	staticC, err := controllers.NewStatic()
-	if err != nil {
-		panic(err)
-	}
-	return staticC
+	return nil
 }

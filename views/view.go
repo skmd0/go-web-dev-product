@@ -58,7 +58,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 }
 
 func getLayouts() []string {
-	layouts, err := filepath.Glob("views/layouts/*.gohtml")
+	layouts, err := filepath.Glob("../views/layouts/*.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +67,7 @@ func getLayouts() []string {
 
 func prependViewDir(layouts []string) {
 	for i, l := range layouts {
-		layouts[i] = "views/" + l
+		layouts[i] = "../views/" + l
 	}
 }
 

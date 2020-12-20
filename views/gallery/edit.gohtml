@@ -13,14 +13,23 @@
                     <div class="control">
                         <button class="button is-primary is-right" type="submit">Update</button>
                     </div>
+                    <div class="control">
+                        <a href="/gallery/{{.ID}}">
+                            <button class="button is-light is-right" type="button">View</button>
+                        </a>
+                    </div>
                 </div>
             </form>
             <hr>
-            {{range .Images}}
-                <li>
-                    {{.}}
-                </li>
-            {{end}}
+            <div class="columns is-multiline" style="padding: 8px">
+                {{range .Images}}
+                    <div class="column thumbnail">
+                        <a href="{{.}}" target="_blank">
+                            <img class="thumbnail" src="{{.}}">
+                        </a>
+                    </div>
+                {{end}}
+            </div>
             <form method="post" action="/gallery/{{.ID}}/images" enctype="multipart/form-data">
                 <div class="field is-grouped">
                     <div class="control">
@@ -45,4 +54,20 @@
             </form>
         </div>
     </div>
+    <style>
+        .thumbnail {
+            text-align: center;
+        }
+
+        .thumbnail a {
+            display: inline-block;
+            min-width: 124px;
+            background-color: #222;
+            line-height: 0;
+        }
+
+        .thumbnail img {
+            height: 124px;
+        }
+    </style>
 {{end}}

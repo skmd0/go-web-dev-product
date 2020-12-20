@@ -3,14 +3,36 @@
         <form method="post" action="/gallery">
             <div class="panel-heading">{{.Title}}</div>
             <div style="padding: 12px 14px">
-                <ul>
+                <div class="columns is-multiline" style="padding: 8px">
                     {{range .Images}}
-                        <li>
-                            {{.}}
-                        </li>
+                        <div class="column thumbnail">
+                            <a href="{{.}}" target="_blank">
+                                <img class="thumbnail" src="{{.}}">
+                            </a>
+                        </div>
                     {{end}}
-                </ul>
+                </div>
+                <hr>
+                <a href="/gallery/{{.ID}}/edit">
+                    <button class="button is-primary" type="button">Edit gallery</button>
+                </a>
             </div>
         </form>
     </div>
+    <style>
+        .thumbnail {
+            text-align: center;
+        }
+
+        .thumbnail a {
+            display: inline-block;
+            min-width: 380px;
+            background-color: #222;
+            line-height: 0;
+        }
+
+        .thumbnail img {
+            height: 380px;
+        }
+    </style>
 {{end}}

@@ -30,6 +30,9 @@ func (is *imageService) ByGalleryID(galleryID uint) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	for i, s := range strings {
+		strings[i] = "/" + s
+	}
 	return strings, nil
 }
 

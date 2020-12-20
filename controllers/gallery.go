@@ -7,14 +7,18 @@ import (
 	"go-web-dev/errs"
 	"go-web-dev/models/gallery"
 	"go-web-dev/views"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
 const (
 	GalleryShowName = "show_gallery"
 	GalleryEditName = "edit_gallery"
+
+	maxMultipartMem = 1 << 20 // 1 megabyte
 )
 
 func NewGallery(gs gallery.GalleryService, r *mux.Router) (*Gallery, error) {
@@ -183,6 +187,64 @@ func (g *Gallery) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)
+}
+
+// POST /gallery/:id/images
+func (g *Gallery) ImageUpload(w http.ResponseWriter, r *http.Request) {
+	glr, err := g.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+	user := context.User(r.Context())
+	if user == nil || glr.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+
+	var vd views.Data
+	vd.Yield = glr
+	err = r.ParseMultipartForm(maxMultipartMem)
+	if err != nil {
+		vd.SetAlert(err)
+		g.EditView.Render(w, r, vd)
+		return
+	}
+
+	galleryPath := fmt.Sprintf("../images/galleries/%v/", glr.ID)
+	err = os.MkdirAll(galleryPath, 0755)
+	if err != nil {
+		vd.SetAlert(err)
+		g.EditView.Render(w, r, vd)
+		return
+	}
+
+	files := r.MultipartForm.File["images"]
+	for _, f := range files {
+		file, err := f.Open()
+		if err != nil {
+			vd.SetAlert(err)
+			g.EditView.Render(w, r, vd)
+			return
+		}
+
+		dst, err := os.Create(galleryPath + f.Filename)
+		if err != nil {
+			vd.SetAlert(err)
+			g.EditView.Render(w, r, vd)
+			return
+		}
+
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			vd.SetAlert(err)
+			g.EditView.Render(w, r, vd)
+			return
+		}
+
+		_, _ = fmt.Fprintln(w, "files successfully uploaded")
+		_ = dst.Close()
+		_ = file.Close()
+	}
 }
 
 func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.Gallery, error) {

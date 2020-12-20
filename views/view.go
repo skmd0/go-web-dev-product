@@ -5,6 +5,7 @@ import (
 	"go-web-dev/context"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"path/filepath"
 )
@@ -47,6 +48,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 	var buf bytes.Buffer
 	err := v.Template.ExecuteTemplate(&buf, v.Layout, vd)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, AlertMsgGeneric, http.StatusInternalServerError)
 		return
 	}

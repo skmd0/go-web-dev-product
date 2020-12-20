@@ -76,8 +76,11 @@ func run() error {
 	r.HandleFunc("/gallery/{id:[0-9]+}/update", requireUserMw.ApplyFn(galleryC.Update)).Methods("POST")
 	r.HandleFunc("/gallery/{id:[0-9]+}/images", requireUserMw.ApplyFn(galleryC.ImageUpload)).Methods("POST")
 	r.HandleFunc("/gallery/{id:[0-9]+}/delete", requireUserMw.ApplyFn(galleryC.Delete)).Methods("POST")
-	r.HandleFunc("/gallery/{id:[0-9]+}", galleryC.Show).Methods("GET").
-		Name(controllers.GalleryShowName)
+	r.HandleFunc("/gallery/{id:[0-9]+}", galleryC.Show).Methods("GET").Name(controllers.GalleryShowName)
+
+	// image routes
+	imageHandler := http.FileServer(http.Dir("../images/"))
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", imageHandler))
 
 	err = http.ListenAndServe(":3000", userMw.Apply(r))
 	if err != nil {

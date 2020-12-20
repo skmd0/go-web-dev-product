@@ -52,7 +52,7 @@ func run() error {
 		return err
 	}
 
-	galleryC, err := controllers.NewGallery(services.Gallery, r)
+	galleryC, err := controllers.NewGallery(services.Gallery, services.Images, r)
 	if err != nil {
 		return err
 	}

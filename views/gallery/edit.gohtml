@@ -16,6 +16,11 @@
                 </div>
             </form>
             <hr>
+            {{range .Images}}
+                <li>
+                    {{.}}
+                </li>
+            {{end}}
             <form method="post" action="/gallery/{{.ID}}/images" enctype="multipart/form-data">
                 <div class="field is-grouped">
                     <div class="control">

@@ -6,11 +6,10 @@ import (
 	"go-web-dev/context"
 	"go-web-dev/errs"
 	"go-web-dev/models/gallery"
+	"go-web-dev/models/images"
 	"go-web-dev/views"
-	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -21,7 +20,7 @@ const (
 	maxMultipartMem = 1 << 20 // 1 megabyte
 )
 
-func NewGallery(gs gallery.GalleryService, r *mux.Router) (*Gallery, error) {
+func NewGallery(gs gallery.GalleryService, is images.ImageService, r *mux.Router) (*Gallery, error) {
 	newGalleryView, err := views.NewView("bulma", "gallery/new")
 	if err != nil {
 		return nil, err
@@ -44,6 +43,7 @@ func NewGallery(gs gallery.GalleryService, r *mux.Router) (*Gallery, error) {
 		EditView:  editView,
 		IndexView: indexView,
 		gs:        gs,
+		is:        is,
 		r:         r,
 	}, nil
 }
@@ -54,6 +54,7 @@ type Gallery struct {
 	EditView  *views.View
 	IndexView *views.View
 	gs        gallery.GalleryService
+	is        images.ImageService
 	r         *mux.Router
 }
 type GalleryForm struct {
@@ -210,14 +211,6 @@ func (g *Gallery) ImageUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	galleryPath := fmt.Sprintf("../images/galleries/%v/", glr.ID)
-	err = os.MkdirAll(galleryPath, 0755)
-	if err != nil {
-		vd.SetAlert(err)
-		g.EditView.Render(w, r, vd)
-		return
-	}
-
 	files := r.MultipartForm.File["images"]
 	for _, f := range files {
 		file, err := f.Open()
@@ -226,25 +219,20 @@ func (g *Gallery) ImageUpload(w http.ResponseWriter, r *http.Request) {
 			g.EditView.Render(w, r, vd)
 			return
 		}
-
-		dst, err := os.Create(galleryPath + f.Filename)
+		err = g.is.Create(glr.ID, file, f.Filename)
 		if err != nil {
 			vd.SetAlert(err)
 			g.EditView.Render(w, r, vd)
 			return
 		}
-
-		_, err = io.Copy(dst, file)
-		if err != nil {
-			vd.SetAlert(err)
-			g.EditView.Render(w, r, vd)
-			return
-		}
-
-		_, _ = fmt.Fprintln(w, "files successfully uploaded")
-		_ = dst.Close()
 		_ = file.Close()
 	}
+	url, err := g.r.Get(GalleryEditName).URL("id", fmt.Sprintf("%v", glr.ID))
+	if err != nil {
+		http.Redirect(w, r, "/galleries", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, url.Path, http.StatusFound)
 }
 
 func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.Gallery, error) {
@@ -265,5 +253,7 @@ func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.
 		}
 		return nil, err
 	}
+	imgs, err := g.is.ByGalleryID(glr.ID)
+	glr.Images = imgs
 	return glr, nil
 }

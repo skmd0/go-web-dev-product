@@ -2,6 +2,7 @@ package models
 
 import (
 	"go-web-dev/models/gallery"
+	"go-web-dev/models/images"
 	"go-web-dev/models/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ func NewServices(connectionInfo string) (*Services, error) {
 	}
 	return &Services{
 		Gallery: gallery.NewGalleryService(db),
+		Images:  images.NewImageService(db),
 		User:    user.NewUserService(db),
 		db:      db,
 	}, nil
@@ -21,6 +23,7 @@ func NewServices(connectionInfo string) (*Services, error) {
 
 type Services struct {
 	Gallery gallery.GalleryService
+	Images  images.ImageService
 	User    user.UserService
 	db      *gorm.DB
 }

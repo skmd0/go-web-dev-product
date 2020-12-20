@@ -44,17 +44,17 @@ func run() error {
 	r := mux.NewRouter()
 	staticC, err := controllers.NewStatic()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	usersC, err := controllers.NewUsers(services.User)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	galleryC, err := controllers.NewGallery(services.Gallery, r)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	userMw := middleware.User{UserService: services.User}

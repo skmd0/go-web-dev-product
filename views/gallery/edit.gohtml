@@ -23,11 +23,16 @@
             <hr>
             <div class="columns is-multiline" style="padding: 8px">
                 {{range .Images}}
-                    <div class="column thumbnail">
-                        <a href="{{.}}" target="_blank">
-                            <img class="thumbnail" src="{{.}}">
-                        </a>
-                    </div>
+                    <form method="post" action="/gallery/{{.GalleryID}}/images/{{.Filename}}/delete">
+                        <div class="column thumbnail">
+                            <a href="{{.URLPath}}" target="_blank">
+                                <img class="thumbnail" src="{{.URLPath}}">
+                            </a>
+                            <div class="control">
+                                <button class="button is-danger is-light is-small" type="submit">Delete</button>
+                            </div>
+                        </div>
+                    </form>
                 {{end}}
             </div>
             <form method="post" action="/gallery/{{.ID}}/images" enctype="multipart/form-data">

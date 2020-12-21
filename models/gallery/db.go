@@ -2,14 +2,15 @@ package gallery
 
 import (
 	"go-web-dev/errs"
+	"go-web-dev/models/images"
 	"gorm.io/gorm"
 )
 
 type Gallery struct {
 	gorm.Model
-	UserID uint     `gorm:"not null;index"`
-	Title  string   `gorm:"not null"`
-	Images []string `gorm:"-"`
+	UserID uint           `gorm:"not null;index"`
+	Title  string         `gorm:"not null"`
+	Images []images.Image `gorm:"-"`
 }
 
 type GalleryDB interface {

@@ -6,12 +6,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type ImageService interface {
 	ImageDB
 	Create(galleryID uint, r io.ReadCloser, filename string) error
-	ByGalleryID(galleryID uint) ([]string, error)
+	ByGalleryID(galleryID uint) ([]Image, error)
+	Delete(image *Image) error
 }
 
 func NewImageService(db *gorm.DB) ImageService {
@@ -24,16 +26,25 @@ type imageService struct {
 	ImageDB
 }
 
-func (is *imageService) ByGalleryID(galleryID uint) ([]string, error) {
+func (is *imageService) Delete(image *Image) error {
+	return os.Remove("../" + image.RelativePath())
+}
+
+func (is *imageService) ByGalleryID(galleryID uint) ([]Image, error) {
 	path := is.imagePath(galleryID)
-	strings, err := filepath.Glob(path + "*")
+	files, err := filepath.Glob(path + "*")
 	if err != nil {
 		return nil, err
 	}
-	for i, s := range strings {
-		strings[i] = "/" + s
+	ret := make([]Image, len(files))
+	for i, s := range files {
+		s = strings.Replace(s, path, "", 1)
+		ret[i] = Image{
+			GalleryID: galleryID,
+			Filename:  s,
+		}
 	}
-	return strings, nil
+	return ret, nil
 }
 
 func (is *imageService) imagePath(galleryID uint) string {

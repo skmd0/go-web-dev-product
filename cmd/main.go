@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
 	"go-web-dev/middleware"
 	"go-web-dev/models"
+	"go-web-dev/rand"
 	"net/http"
 	"os"
 )
@@ -57,6 +59,12 @@ func run() error {
 		return err
 	}
 
+	isProd := false
+	csrfToken, err := rand.GenerateRememberToken(32)
+	if err != nil {
+		return err
+	}
+	csrfMw := csrf.Protect([]byte(csrfToken), csrf.Secure(isProd))
 	userMw := middleware.User{UserService: services.User}
 	requireUserMw := middleware.RequireUser{User: userMw}
 
@@ -88,7 +96,7 @@ func run() error {
 	assetHandler := http.StripPrefix("/assets/", http.FileServer(http.Dir("../assets/")))
 	r.PathPrefix("/assets/").Handler(assetHandler)
 
-	err = http.ListenAndServe(":3000", userMw.Apply(r))
+	err = http.ListenAndServe(":3000", csrfMw(userMw.Apply(r)))
 	if err != nil {
 		return err
 	}

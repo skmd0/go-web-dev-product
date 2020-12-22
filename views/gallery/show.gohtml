@@ -1,6 +1,7 @@
 {{define "yield"}}
     <div class="panel control">
         <form method="post" action="/gallery">
+            {{csrfField}}
             <div class="panel-heading">{{.Title}}</div>
             <div style="padding: 12px 14px">
                 <div class="columns is-multiline" style="padding: 8px">

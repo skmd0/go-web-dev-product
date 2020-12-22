@@ -1,6 +1,7 @@
 {{define "yield"}}
     <div class="panel control">
         <form method="post" action="/login">
+            {{csrfField}}
             <div class="panel-heading">Welcome back</div>
             <div style="padding: 12px 14px">
                 <div class="field">

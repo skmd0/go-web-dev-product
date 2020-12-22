@@ -8,17 +8,48 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewServices(connectionInfo string) (*Services, error) {
-	db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{})
-	if err != nil {
-		return nil, err
+type ServicesConfig func(*Services) error
+
+func WithImages() ServicesConfig {
+	return func(s *Services) error {
+		s.Images = images.NewImageService()
+		return nil
 	}
-	return &Services{
-		Gallery: gallery.NewGalleryService(db),
-		Images:  images.NewImageService(db),
-		User:    user.NewUserService(db),
-		db:      db,
-	}, nil
+}
+
+func WithGallery() ServicesConfig {
+	return func(s *Services) error {
+		s.Gallery = gallery.NewGalleryService(s.db)
+		return nil
+	}
+}
+
+func WithGorm(connectionInfo string) ServicesConfig {
+	return func(s *Services) error {
+		db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{})
+		if err != nil {
+			return err
+		}
+		s.db = db
+		return nil
+	}
+}
+
+func WithUser(hmacKey, pepper string) ServicesConfig {
+	return func(s *Services) error {
+		s.User = user.NewUserService(s.db, hmacKey, pepper)
+		return nil
+	}
+}
+
+func NewServices(configs ...ServicesConfig) (*Services, error) {
+	var s Services
+	for _, cfg := range configs {
+		if err := cfg(&s); err != nil {
+			return nil, err
+		}
+	}
+	return &s, nil
 }
 
 type Services struct {

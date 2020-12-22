@@ -2,7 +2,6 @@ package images
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"io"
 	"os"
 	"path/filepath"
@@ -10,20 +9,16 @@ import (
 )
 
 type ImageService interface {
-	ImageDB
 	Create(galleryID uint, r io.ReadCloser, filename string) error
 	ByGalleryID(galleryID uint) ([]Image, error)
 	Delete(image *Image) error
 }
 
-func NewImageService(db *gorm.DB) ImageService {
-	idb := &imageGorm{db}
-	iv := &imageValidator{idb}
-	return &imageService{iv}
+func NewImageService() ImageService {
+	return &imageService{}
 }
 
 type imageService struct {
-	ImageDB
 }
 
 func (is *imageService) Delete(image *Image) error {

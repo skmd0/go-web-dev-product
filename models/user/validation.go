@@ -11,9 +11,6 @@ import (
 	"unicode/utf8"
 )
 
-const userPwPepper = "secret-user-pepper-string"
-const hmacSecretKey = "my-hmac-secret-key"
-
 type userValFunc func(*User) error
 
 func runUserValFunc(user *User, fns ...userValFunc) error {
@@ -26,10 +23,11 @@ func runUserValFunc(user *User, fns ...userValFunc) error {
 	return nil
 }
 
-func newUserValidator(udb UserDB) *userValidator {
+func newUserValidator(udb UserDB, hmacKey, pepper string) *userValidator {
 	return &userValidator{
 		UserDB:     udb,
-		hmac:       hash.NewHMAC(hmacSecretKey),
+		hmac:       hash.NewHMAC(hmacKey),
+		pepper:     pepper,
 		emailRegex: regexp.MustCompile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,16}$"),
 	}
 }
@@ -39,6 +37,7 @@ var _ UserDB = &userValidator{}
 type userValidator struct {
 	UserDB
 	hmac       hash.HMAC
+	pepper     string
 	emailRegex *regexp.Regexp
 }
 
@@ -89,7 +88,7 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 	if user.Password == "" {
 		return nil
 	}
-	pwBytes := []byte(user.Password + userPwPepper)
+	pwBytes := []byte(user.Password + uv.pepper)
 	hashedPassword, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return err

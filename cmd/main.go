@@ -6,19 +6,12 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
+	"go-web-dev/internal"
 	"go-web-dev/middleware"
 	"go-web-dev/models"
 	"go-web-dev/rand"
 	"net/http"
 	"os"
-)
-
-const (
-	host     = "localhost"
-	port     = 5432
-	pq_user  = "postgres"
-	password = "testtest"
-	dbName   = "postgres"
 )
 
 func main() {
@@ -30,14 +23,19 @@ func main() {
 
 func run() error {
 	var err error
-	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable",
-		host, port, pq_user, password, dbName)
-	services, err := models.NewServices(dsn)
+
+	cfg := internal.DefaultConfig()
+	dbCfg := internal.DefaultPostgresConfig()
+	services, err := models.NewServices(
+		models.WithGorm(dbCfg.ConnectionInfo()),
+		models.WithUser(cfg.HMACKey, cfg.Pepper),
+		models.WithGallery(),
+		models.WithImages(),
+	)
 	if err != nil {
 		return err
 	}
 
-	//services.DestructiveReset()
 	err = services.AutoMigrate()
 	if err != nil {
 		return err
@@ -59,12 +57,11 @@ func run() error {
 		return err
 	}
 
-	isProd := false
 	csrfToken, err := rand.GenerateRememberToken(32)
 	if err != nil {
 		return err
 	}
-	csrfMw := csrf.Protect([]byte(csrfToken), csrf.Secure(isProd))
+	csrfMw := csrf.Protect([]byte(csrfToken), csrf.Secure(cfg.IsProd()))
 	userMw := middleware.User{UserService: services.User}
 	requireUserMw := middleware.RequireUser{User: userMw}
 
@@ -96,7 +93,9 @@ func run() error {
 	assetHandler := http.StripPrefix("/assets/", http.FileServer(http.Dir("../assets/")))
 	r.PathPrefix("/assets/").Handler(assetHandler)
 
-	err = http.ListenAndServe(":3000", csrfMw(userMw.Apply(r)))
+	fmt.Printf("Starting the server on :%d\n", cfg.Port)
+	address := fmt.Sprintf(":%d", cfg.Port)
+	err = http.ListenAndServe(address, csrfMw(userMw.Apply(r)))
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,7 @@
             <div style="padding: 12px 14px">
                 <div class="columns is-multiline" style="padding: 8px">
                     {{range .Images}}
-                        <div class="column thumbnail">
+                        <div class="column thumbnail thumbnail-show">
                             <a href="{{.URLPath}}" target="_blank">
                                 <img class="thumbnail" src="{{.URLPath}}">
                             </a>
@@ -19,20 +19,4 @@
             </div>
         </form>
     </div>
-    <style>
-        .thumbnail {
-            text-align: center;
-        }
-
-        .thumbnail a {
-            display: inline-block;
-            min-width: 380px;
-            background-color: #222;
-            line-height: 0;
-        }
-
-        .thumbnail img {
-            height: 380px;
-        }
-    </style>
 {{end}}

@@ -1,0 +1,25 @@
+.thumbnail {
+    text-align: center;
+}
+
+.thumbnail a {
+    display: inline-block;
+    background-color: #222;
+    line-height: 0;
+}
+
+.thumbnail-show {
+    min-width: 380px;
+}
+
+.thumbnail-show img {
+    height: 380px;
+}
+
+.thumbnail-edit {
+    min-width: 124px;
+}
+
+.thumbnail-edit img {
+    height: 124px;
+}

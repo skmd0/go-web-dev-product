@@ -84,6 +84,10 @@ func run() error {
 	imageHandler := http.FileServer(http.Dir("../images/"))
 	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", imageHandler))
 
+	// assets
+	assetHandler := http.StripPrefix("/assets/", http.FileServer(http.Dir("../assets/")))
+	r.PathPrefix("/assets/").Handler(assetHandler)
+
 	err = http.ListenAndServe(":3000", userMw.Apply(r))
 	if err != nil {
 		return err

@@ -3,6 +3,7 @@ package images
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"net/url"
 )
 
 type Image struct {
@@ -11,7 +12,11 @@ type Image struct {
 }
 
 func (i *Image) URLPath() string {
-	return "/" + i.RelativePath()
+	// by creating url.URL struct the URL will be encoded correctly
+	urlPath := url.URL{
+		Path: "/" + i.RelativePath(),
+	}
+	return urlPath.String()
 }
 
 func (i *Image) RelativePath() string {

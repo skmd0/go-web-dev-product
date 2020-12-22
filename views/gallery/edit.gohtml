@@ -24,7 +24,7 @@
             <hr>
             <div class="columns is-multiline" style="padding: 8px">
                 {{range .Images}}
-                    <form method="post" action="/gallery/{{.GalleryID}}/images/{{.Filename}}/delete">
+                    <form method="post" action="/gallery/{{.GalleryID}}/images/{{.Filename | urlquery}}/delete">
                         {{csrfField}}
                         <div class="column thumbnail thumbnail-edit">
                             <a href="{{.URLPath}}" target="_blank">

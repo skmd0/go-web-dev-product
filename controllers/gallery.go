@@ -66,16 +66,11 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 	var galleryForm GalleryForm
 	err := parseForm(r, &galleryForm)
 	if err != nil {
-		log.Println(err)
 		vd.SetAlert(err)
 		g.New.Render(w, r, vd)
 		return
 	}
 	user := context.User(r.Context())
-	if user == nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
 	glr := gallery.Gallery{
 		UserID: user.ID,
 		Title:  galleryForm.Title,
@@ -89,6 +84,7 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 	glrStrID := strconv.Itoa(int(glr.ID))
 	url, err := g.r.Get(GalleryEditName).URL("id", glrStrID)
 	if err != nil {
+		log.Println(err)
 		http.Redirect(w, r, "/galleries", http.StatusFound)
 		return
 	}
@@ -100,6 +96,7 @@ func (g *Gallery) Index(w http.ResponseWriter, r *http.Request) {
 	user := context.User(r.Context())
 	galleries, err := g.gs.ByUserID(user.ID)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
@@ -127,6 +124,7 @@ func (g *Gallery) Edit(w http.ResponseWriter, r *http.Request) {
 	}
 	user := context.User(r.Context())
 	if glr.UserID != user.ID {
+		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
 		return
 	}
@@ -143,6 +141,7 @@ func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	user := context.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
+		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
 		return
 	}
@@ -151,7 +150,6 @@ func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
 	vd.Yield = glr
 	err = parseForm(r, &form)
 	if err != nil {
-		log.Println(err)
 		vd.SetAlert(err)
 		g.EditView.Render(w, r, vd)
 		return
@@ -159,7 +157,6 @@ func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
 	glr.Title = form.Title
 	err = g.gs.Update(glr)
 	if err != nil {
-		log.Println(err)
 		vd.SetAlert(err)
 		g.EditView.Render(w, r, vd)
 		return
@@ -176,13 +173,13 @@ func (g *Gallery) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	user := context.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
+		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
 		return
 	}
 	var vd views.Data
 	err = g.gs.Delete(glr.ID)
 	if err != nil {
-		log.Println(err)
 		vd.SetAlert(err)
 		g.EditView.Render(w, r, vd)
 		return
@@ -198,6 +195,7 @@ func (g *Gallery) ImageUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	user := context.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
+		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
 		return
 	}
@@ -229,6 +227,7 @@ func (g *Gallery) ImageUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	url, err := g.r.Get(GalleryEditName).URL("id", fmt.Sprintf("%v", glr.ID))
 	if err != nil {
+		log.Println(err)
 		http.Redirect(w, r, "/galleries", http.StatusFound)
 		return
 	}
@@ -240,6 +239,7 @@ func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.
 	strID := vars["id"]
 	id, err := strconv.Atoi(strID)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Invalid gallery ID.", http.StatusNotFound)
 		return nil, err
 	}
@@ -247,8 +247,10 @@ func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.
 	if err != nil {
 		switch err {
 		case errs.ErrNotFound:
+			log.Println(err)
 			http.Error(w, "Gallery not found.", http.StatusNotFound)
 		default:
+			log.Println(err)
 			http.Error(w, "Oops! Something went wrong.", http.StatusInternalServerError)
 		}
 		return nil, err
@@ -266,6 +268,7 @@ func (g *Gallery) ImageDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	user := context.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
+		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
 		return
 	}
@@ -286,6 +289,7 @@ func (g *Gallery) ImageDelete(w http.ResponseWriter, r *http.Request) {
 	glrStrID := strconv.Itoa(int(glr.ID))
 	url, err := g.r.Get(GalleryEditName).URL("id", glrStrID)
 	if err != nil {
+		log.Println(err)
 		http.Redirect(w, r, "/galleries", http.StatusFound)
 		return
 	}

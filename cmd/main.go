@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
@@ -24,8 +25,12 @@ func main() {
 func run() error {
 	var err error
 
-	cfg := internal.DefaultConfig()
-	dbCfg := internal.DefaultPostgresConfig()
+	configReq := flag.Bool("prod", false,
+		"Provide this flag in production. This ensures that .config is provided before application starts.")
+	flag.Parse()
+
+	cfg := internal.LoadConfig(*configReq)
+	dbCfg := cfg.Database
 	services, err := models.NewServices(
 		models.WithGorm(dbCfg.ConnectionInfo()),
 		models.WithUser(cfg.HMACKey, cfg.Pepper),

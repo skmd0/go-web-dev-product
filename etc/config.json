@@ -1,0 +1,13 @@
+{
+  "port": 3000,
+  "env": "dev",
+  "pepper": "secret-user-pepper-string",
+  "hmac_key": "my-hmac-secret-key",
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "testtest",
+    "name": "postgres"
+  }
+}

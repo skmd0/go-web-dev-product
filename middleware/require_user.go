@@ -4,6 +4,7 @@ import (
 	"go-web-dev/context"
 	"go-web-dev/models/user"
 	"net/http"
+	"strings"
 )
 
 type User struct {
@@ -16,6 +17,12 @@ func (mw *User) Apply(next http.Handler) http.Handler {
 
 func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// when we serve static assets we do not need to look up token
+		// this is done to avoid unnecessary DB lookups when we are fetching bunch of images in gallery
+		if path := r.URL.Path; strings.HasPrefix(path, "/assets/") || strings.HasPrefix(path, "/images/") {
+			next(w, r)
+			return
+		}
 		cookie, err := r.Cookie("remember_token")
 		if err != nil {
 			next(w, r)

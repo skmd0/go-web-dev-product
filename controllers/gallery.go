@@ -61,6 +61,7 @@ type GalleryForm struct {
 	Title string `schema:"title"`
 }
 
+// Create creates a new Gallery resource
 func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 	var galleryForm GalleryForm

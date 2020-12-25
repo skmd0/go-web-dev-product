@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"go-web-dev/context"
 	"go-web-dev/errs"
 	"go-web-dev/models/user"
 	"go-web-dev/rand"
 	"go-web-dev/views"
 	"log"
 	"net/http"
+	"time"
 )
 
 func NewUsers(us user.UserService) (*Users, error) {
@@ -126,4 +128,20 @@ func (u *Users) signIn(w http.ResponseWriter, user *user.User) error {
 	}
 	http.SetCookie(w, &cookie)
 	return nil
+}
+
+func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
+	cookie := http.Cookie{
+		Name:     "remember_token",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+
+	usr := context.User(r.Context())
+	token, _ := rand.RememberToken()
+	usr.Remember = token
+	_ = u.us.Update(usr)
+	http.Redirect(w, r, "/", http.StatusFound)
 }

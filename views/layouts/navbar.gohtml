@@ -24,12 +24,23 @@
 
             <div class="navbar-end">
                 <div class="navbar-item">
-                    <div class="buttons">
-                        <a class="button is-primary" href="/signup"><strong>Sign up</strong></a>
-                        <a class="button is-light" href="/login">Log in</a>
-                    </div>
+                    {{if .User}}
+                        {{template "logoutForm"}}
+                    {{else}}
+                        <div class="buttons">
+                            <a class="button is-primary" href="/signup"><strong>Sign up</strong></a>
+                            <a class="button is-light" href="/login">Log in</a>
+                        </div>
+                    {{end}}
                 </div>
             </div>
         </div>
     </nav>
+{{end}}
+
+{{define "logoutForm"}}
+    <form action="/logout" method="POST">
+        {{csrfField}}
+        <button type="submit" class="button is-light">Log out</button>
+    </form>
 {{end}}

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"go-web-dev/context"
 	"fmt"
+	"go-web-dev/context"
 	"go-web-dev/errs"
 	"go-web-dev/models/user"
 	"go-web-dev/rand"

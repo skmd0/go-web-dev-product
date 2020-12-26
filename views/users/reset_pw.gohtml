@@ -7,19 +7,20 @@
                 <div class="field">
                     <label class="label" for="token">Reset Token: </label>
                     <div class="control">
-                        <input class="input" name="token" id="token" type="text" value="{{.Token}}"/>
+                        <input class="input" name="token" id="token" type="text" autocomplete="off" value="{{.Token}}"/>
                     </div>
                 </div>
                 <div class="field">
-                    <label class="label" for="password">Password: </label>
+                    <label class="label" for="password">New password: </label>
                     <div class="control">
-                        <input class="input" name="password" id="password" type="password">
+                        <input class="input" name="password" id="password" type="password" autocomplete="new-password">
                     </div>
                 </div>
                 <div class="field">
-                    <label class="label" for="repeat-password">Repeat password: </label>
+                    <label class="label" for="repeat-password">Repeat new password: </label>
                     <div class="control">
-                        <input class="input" name="repeat-password" id="repeat-password" type="password">
+                        <input class="input" name="repeat-password" id="repeat-password" type="password"
+                               autocomplete="new-password">
                     </div>
                 </div>
                 <div class="field is-grouped is-grouped-right">

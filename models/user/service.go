@@ -3,7 +3,6 @@ package user
 import (
 	"go-web-dev/errs"
 	"go-web-dev/hash"
-	"go-web-dev/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"time"
@@ -21,7 +20,7 @@ func (us *userService) InitiateReset(email string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	pwr := &models.PwReset{UserID: usr.ID}
+	pwr := &PwReset{UserID: usr.ID}
 	if err := us.pwResetDB.Create(pwr); err != nil {
 		return "", err
 	}
@@ -56,8 +55,8 @@ func NewUserService(db *gorm.DB, hmacKey, pepper string) UserService {
 	ug := &userGorm{db}
 	uv := newUserValidator(ug, hmacKey, pepper)
 	hmac := hash.NewHMAC(hmacKey)
-	pwrGorm := &models.PwResetGorm{DB: db}
-	pwr := models.NewPwResetValidator(pwrGorm, hmac)
+	pwrGorm := &PwResetGorm{DB: db}
+	pwr := NewPwResetValidator(pwrGorm, hmac)
 	return &userService{
 		UserDB:    uv,
 		pepper:    pepper,
@@ -70,7 +69,7 @@ var _ UserService = &userService{}
 type userService struct {
 	UserDB
 	pepper    string
-	pwResetDB models.PwResetDB
+	pwResetDB PwResetDB
 }
 
 func (us *userService) Authenticate(email, password string) (*User, error) {

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"go-web-dev/context"
 	"fmt"
 	"go-web-dev/errs"
 	"go-web-dev/models/user"
@@ -8,6 +9,7 @@ import (
 	"go-web-dev/views"
 	"log"
 	"net/http"
+	"time"
 )
 
 func NewUsers(us user.UserService) (*Users, error) {
@@ -81,7 +83,11 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, "/galleries", http.StatusFound)
+	alert := views.Alert{
+		Level:   views.AlertLvlSuccess,
+		Message: "Welcome to gallery!",
+	}
+	views.RedirectAlert(w, r, "/galleries", http.StatusFound, alert)
 }
 
 type LoginForm struct {
@@ -212,4 +218,20 @@ func (u *Users) signIn(w http.ResponseWriter, user *user.User) error {
 	}
 	http.SetCookie(w, &cookie)
 	return nil
+}
+
+func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
+	cookie := http.Cookie{
+		Name:     "remember_token",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+
+	usr := context.User(r.Context())
+	token, _ := rand.RememberToken()
+	usr.Remember = token
+	_ = u.us.Update(usr)
+	http.Redirect(w, r, "/", http.StatusFound)
 }

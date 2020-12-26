@@ -60,7 +60,7 @@ type Services struct {
 }
 
 func (s *Services) DestructiveReset() error {
-	err := s.db.Migrator().DropTable(&user.User{}, &gallery.Gallery{})
+	err := s.db.Migrator().DropTable(&user.User{}, &gallery.Gallery{}, &PwReset{})
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (s *Services) DestructiveReset() error {
 }
 
 func (s *Services) AutoMigrate() error {
-	if err := s.db.Migrator().AutoMigrate(&user.User{}, &gallery.Gallery{}); err != nil {
+	if err := s.db.Migrator().AutoMigrate(&user.User{}, &gallery.Gallery{}, &PwReset{}); err != nil {
 		return err
 	}
 	return nil

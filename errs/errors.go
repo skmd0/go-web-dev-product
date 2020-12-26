@@ -13,6 +13,7 @@ const (
 	ErrPasswordTooShort  modelError = "password must be at least 8 characters long"
 	ErrPasswordRequired  modelError = "password is required"
 	ErrTitleRequired     modelError = "gallery need to have a title"
+	ErrTokenInvalid      modelError = "models: token provided is not valid"
 
 	ErrInvalidID        privateError = "models: ID provided is invalid"
 	ErrRememberTooShort privateError = "remember token is too short"

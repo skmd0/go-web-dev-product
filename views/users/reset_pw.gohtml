@@ -1,0 +1,33 @@
+{{define "yield"}}
+    <div class="panel control">
+        <form method="post" action="/reset">
+            {{csrfField}}
+            <div class="panel-heading">Reset your password</div>
+            <div style="padding: 12px 14px">
+                <div class="field">
+                    <label class="label" for="token">Reset Token: </label>
+                    <div class="control">
+                        <input class="input" name="token" id="token" type="text" value="{{.Token}}"/>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="password">Password: </label>
+                    <div class="control">
+                        <input class="input" name="password" id="password" type="password">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="repeat-password">Repeat password: </label>
+                    <div class="control">
+                        <input class="input" name="repeat-password" id="repeat-password" type="password">
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                        <button class="button is-primary is-right" type="submit">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{{end}}

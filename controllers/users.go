@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"go-web-dev/errs"
 	"go-web-dev/models/user"
 	"go-web-dev/rand"
@@ -18,18 +19,29 @@ func NewUsers(us user.UserService) (*Users, error) {
 	if err != nil {
 		return nil, err
 	}
+	forgotPwView, err := views.NewView("bulma", "users/forgot_pw")
+	if err != nil {
+		return nil, err
+	}
+	resetPwView, err := views.NewView("bulma", "users/reset_pw")
+	if err != nil {
+		return nil, err
+	}
 	return &Users{
-		NewView:   signUpView,
-		LoginView: loginView,
-		us:        us,
+		NewView:      signUpView,
+		LoginView:    loginView,
+		ForgotPwView: forgotPwView,
+		ResetPwView:  resetPwView,
+		us:           us,
 	}, nil
-
 }
 
 type Users struct {
-	NewView   *views.View
-	LoginView *views.View
-	us        user.UserService
+	NewView      *views.View
+	LoginView    *views.View
+	ForgotPwView *views.View
+	ResetPwView  *views.View
+	us           user.UserService
 }
 
 type UserSignUp struct {
@@ -105,6 +117,80 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)
+}
+
+type ResetPwForm struct {
+	Email    string `schema:"email"`
+	Token    string `schema:"token"`
+	Password string `schema:"password"`
+}
+
+// POST /forgot
+func (u *Users) InitiateReset(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+	var form ResetPwForm
+	vd.Yield = &form
+	if err := parseForm(r, &form); err != nil {
+		vd.SetAlert(err)
+		u.ForgotPwView.Render(w, r, vd)
+		return
+	}
+
+	token, err := u.us.InitiateReset(form.Email)
+	if err != nil {
+		vd.SetAlert(err)
+		u.ForgotPwView.Render(w, r, vd)
+		return
+	}
+	fmt.Println("Password reset token:", token)
+	views.RedirectAlert(w, r, "/reset", http.StatusFound, views.Alert{
+		Level:   views.AlertLvlSuccess,
+		Message: "Instructions for resetting the password have been sent to you.",
+	})
+}
+
+// GET /reset
+func (u *Users) ResetPw(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+	var form ResetPwForm
+	vd.Yield = &form
+
+	if err := parseForm(r, &form); err != nil {
+		vd.SetAlert(err)
+		u.ResetPwView.Render(w, r, vd)
+		return
+	}
+	u.ResetPwView.Render(w, r, vd)
+}
+
+// POST /reset
+func (u *Users) CompleteReset(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+	var form ResetPwForm
+	vd.Yield = &form
+
+	if err := parseForm(r, &form); err != nil {
+		vd.SetAlert(err)
+		u.ResetPwView.Render(w, r, vd)
+		return
+	}
+
+	usr, err := u.us.CompleteReset(form.Token, form.Password)
+	if err != nil {
+		vd.SetAlert(err)
+		u.ResetPwView.Render(w, r, vd)
+		return
+	}
+	err = u.signIn(w, usr)
+	if err != nil {
+		vd.SetAlert(err)
+		u.ResetPwView.Render(w, r, vd)
+		return
+	}
+	views.RedirectAlert(w, r, "/galleries", http.StatusFound, views.Alert{
+		Level:   views.AlertLvlSuccess,
+		Message: "Password successfully reset!",
+	})
 }
 
 func (u *Users) signIn(w http.ResponseWriter, user *user.User) error {

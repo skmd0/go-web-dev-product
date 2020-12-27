@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/gorilla/csrf"
 	"github.com/pkg/errors"
-	"go-web-dev/context"
+	"go-web-dev/internal"
 	"html/template"
 	"io"
 	"log"
@@ -53,7 +53,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 		vd.Alert = alert
 		clearAlert(w)
 	}
-	vd.User = context.User(r.Context())
+	vd.User = internal.User(r.Context())
 
 	var buf bytes.Buffer
 	csrfField := csrf.TemplateField(r)

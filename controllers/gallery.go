@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"go-web-dev/context"
 	"go-web-dev/internal"
 	"go-web-dev/models/gallery"
 	"go-web-dev/models/images"
@@ -71,7 +70,7 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 		g.New.Render(w, r, vd)
 		return
 	}
-	user := context.User(r.Context())
+	user := internal.User(r.Context())
 	glr := gallery.Gallery{
 		UserID: user.ID,
 		Title:  galleryForm.Title,
@@ -94,7 +93,7 @@ func (g *Gallery) Create(w http.ResponseWriter, r *http.Request) {
 
 // GET /galleries
 func (g *Gallery) Index(w http.ResponseWriter, r *http.Request) {
-	user := context.User(r.Context())
+	user := internal.User(r.Context())
 	galleries, err := g.gs.ByUserID(user.ID)
 	if err != nil {
 		log.Println(err)
@@ -123,7 +122,7 @@ func (g *Gallery) Edit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
+	user := internal.User(r.Context())
 	if glr.UserID != user.ID {
 		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
@@ -140,7 +139,7 @@ func (g *Gallery) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
+	user := internal.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
 		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
@@ -172,7 +171,7 @@ func (g *Gallery) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
+	user := internal.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
 		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
@@ -194,7 +193,7 @@ func (g *Gallery) ImageUpload(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
+	user := internal.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
 		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)
@@ -267,7 +266,7 @@ func (g *Gallery) ImageDelete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
+	user := internal.User(r.Context())
 	if user == nil || glr.UserID != user.ID {
 		log.Println(err)
 		http.Error(w, "Gallery not found", http.StatusNotFound)

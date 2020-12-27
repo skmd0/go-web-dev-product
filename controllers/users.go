@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"go-web-dev/context"
 	"go-web-dev/internal"
 	"go-web-dev/models/user"
 	"go-web-dev/views"
@@ -228,7 +227,7 @@ func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 
-	usr := context.User(r.Context())
+	usr := internal.User(r.Context())
 	token, _ := internal.RememberToken()
 	usr.Remember = token
 	_ = u.us.Update(usr)

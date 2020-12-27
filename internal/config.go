@@ -55,7 +55,7 @@ func DefaultConfig() Config {
 }
 
 func LoadConfig(configReq bool) Config {
-	f, err := os.Open("../etc/config.json")
+	f, err := os.Open("../config.json")
 	if err != nil {
 		if configReq {
 			panic(err)

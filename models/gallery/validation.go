@@ -1,7 +1,7 @@
 package gallery
 
 import (
-	"go-web-dev/errs"
+	"go-web-dev/internal"
 	"gorm.io/gorm"
 )
 
@@ -41,21 +41,21 @@ func (gv *galleryValidator) Delete(id uint) error {
 
 func (gv *galleryValidator) userIDRequired(gallery *Gallery) error {
 	if gallery.UserID <= 0 {
-		return errs.ErrUserIDRequired
+		return internal.ErrUserIDRequired
 	}
 	return nil
 }
 
 func (gv *galleryValidator) titleRequired(gallery *Gallery) error {
 	if gallery.Title == "" {
-		return errs.ErrTitleRequired
+		return internal.ErrTitleRequired
 	}
 	return nil
 }
 
 func (gv *galleryValidator) checkGalleryID(glr *Gallery) error {
 	if glr.ID == 0 {
-		return errs.ErrInvalidID
+		return internal.ErrInvalidID
 	}
 	return nil
 }

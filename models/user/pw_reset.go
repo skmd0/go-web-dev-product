@@ -1,7 +1,6 @@
 package user
 
 import (
-	"go-web-dev/errs"
 	"go-web-dev/internal"
 	"gorm.io/gorm"
 )
@@ -44,7 +43,7 @@ func (pv *pwResetValidator) Create(pwr *PwReset) error {
 
 func (pv *pwResetValidator) Delete(id uint) error {
 	if id == 0 {
-		return errs.ErrInvalidID
+		return internal.ErrInvalidID
 	}
 	return pv.PwResetDB.Delete(id)
 }
@@ -75,7 +74,7 @@ func (pg *PwResetGorm) first(db *gorm.DB) (*PwReset, error) {
 	case nil:
 		return &pwr, nil
 	case gorm.ErrRecordNotFound:
-		return nil, errs.ErrNotFound
+		return nil, internal.ErrNotFound
 	default:
 		return nil, err
 	}
@@ -90,7 +89,7 @@ func NewPwResetValidator(db PwResetDB, hmac internal.HMAC) *pwResetValidator {
 
 func (pv *pwResetValidator) requireUserID(pwr *PwReset) error {
 	if pwr.UserID == 0 {
-		return errs.ErrUserIDRequired
+		return internal.ErrUserIDRequired
 	}
 	return nil
 }

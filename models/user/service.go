@@ -1,7 +1,6 @@
 package user
 
 import (
-	"go-web-dev/errs"
 	"go-web-dev/internal"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -30,13 +29,13 @@ func (us *userService) InitiateReset(email string) (string, error) {
 func (us *userService) CompleteReset(token, newPw string) (*User, error) {
 	pwr, err := us.pwResetDB.ByToken(token)
 	if err != nil {
-		if err == errs.ErrNotFound {
-			return nil, errs.ErrTokenInvalid
+		if err == internal.ErrNotFound {
+			return nil, internal.ErrTokenInvalid
 		}
 		return nil, err
 	}
 	if time.Now().Sub(pwr.CreatedAt) > (time.Hour * 12) {
-		return nil, errs.ErrTokenInvalid
+		return nil, internal.ErrTokenInvalid
 	}
 	usr, err := us.ByID(pwr.UserID)
 	if err != nil {
@@ -80,7 +79,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+us.pepper))
 	switch err {
 	case bcrypt.ErrMismatchedHashAndPassword:
-		return nil, errs.ErrPasswordIncorrect
+		return nil, internal.ErrPasswordIncorrect
 	case nil:
 		return foundUser, nil
 	default:

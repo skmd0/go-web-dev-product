@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"go-web-dev/context"
-	"go-web-dev/errs"
+	"go-web-dev/internal"
 	"go-web-dev/models/gallery"
 	"go-web-dev/models/images"
 	"go-web-dev/views"
@@ -247,7 +247,7 @@ func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.
 	glr, err := g.gs.ByID(uint(id))
 	if err != nil {
 		switch err {
-		case errs.ErrNotFound:
+		case internal.ErrNotFound:
 			log.Println(err)
 			http.Error(w, "Gallery not found.", http.StatusNotFound)
 		default:

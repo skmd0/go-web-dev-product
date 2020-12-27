@@ -1,7 +1,7 @@
 package gallery
 
 import (
-	"go-web-dev/errs"
+	"go-web-dev/internal"
 	"go-web-dev/models/images"
 	"gorm.io/gorm"
 )
@@ -57,7 +57,7 @@ func (gg *galleryGorm) first(db *gorm.DB) (*Gallery, error) {
 	case nil:
 		return &gallery, nil
 	case gorm.ErrRecordNotFound:
-		return nil, errs.ErrNotFound
+		return nil, internal.ErrNotFound
 	default:
 		return nil, err
 	}

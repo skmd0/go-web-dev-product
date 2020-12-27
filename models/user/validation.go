@@ -1,7 +1,6 @@
 package user
 
 import (
-	"go-web-dev/errs"
 	"go-web-dev/internal"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -125,21 +124,21 @@ func (uv *userValidator) hmacMinBytes(user *User) error {
 		return err
 	}
 	if n < internal.RememberTokenBytes {
-		return errs.ErrRememberTooShort
+		return internal.ErrRememberTooShort
 	}
 	return nil
 }
 
 func (uv *userValidator) hmacHashRequired(user *User) error {
 	if user.RememberHash == "" {
-		return errs.ErrRememberRequired
+		return internal.ErrRememberRequired
 	}
 	return nil
 }
 
 func (uv *userValidator) checkUserID(user *User) error {
 	if user.ID == 0 {
-		return errs.ErrInvalidID
+		return internal.ErrInvalidID
 	}
 	return nil
 }
@@ -151,21 +150,21 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 
 func (uv *userValidator) requireEmail(user *User) error {
 	if user.Email == "" {
-		return errs.ErrEmailRequired
+		return internal.ErrEmailRequired
 	}
 	return nil
 }
 
 func (uv *userValidator) validEmail(user *User) error {
 	if !uv.emailRegex.MatchString(user.Email) {
-		return errs.ErrEmailInvalid
+		return internal.ErrEmailInvalid
 	}
 	return nil
 }
 
 func (uv *userValidator) emailIsAvailable(user *User) error {
 	existing, err := uv.ByEmail(user.Email)
-	if err == errs.ErrNotFound {
+	if err == internal.ErrNotFound {
 		return nil
 	}
 	if err != nil {
@@ -173,14 +172,14 @@ func (uv *userValidator) emailIsAvailable(user *User) error {
 	}
 	// we found the user with this email address
 	if user.ID != existing.ID {
-		return errs.ErrEmailTaken
+		return internal.ErrEmailTaken
 	}
 	return nil
 }
 
 func (uv *userValidator) passRequired(user *User) error {
 	if user.Password == "" {
-		return errs.ErrPasswordRequired
+		return internal.ErrPasswordRequired
 	}
 	return nil
 }
@@ -191,14 +190,14 @@ func (uv *userValidator) passMinLength(user *User) error {
 		return nil
 	}
 	if utf8.RuneCountInString(user.Password) < 8 {
-		return errs.ErrPasswordTooShort
+		return internal.ErrPasswordTooShort
 	}
 	return nil
 }
 
 func (uv *userValidator) passHashRequired(user *User) error {
 	if user.PasswordHash == "" {
-		return errs.ErrPasswordRequired
+		return internal.ErrPasswordRequired
 	}
 	return nil
 }

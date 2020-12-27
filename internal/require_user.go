@@ -1,7 +1,6 @@
-package middleware
+package internal
 
 import (
-	"go-web-dev/internal"
 	"go-web-dev/models/user"
 	"net/http"
 	"strings"
@@ -34,7 +33,7 @@ func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		ctx := r.Context()
-		ctx = internal.WithUser(ctx, usr)
+		ctx = WithUser(ctx, usr)
 		r = r.WithContext(ctx)
 		next(w, r)
 	}
@@ -51,7 +50,7 @@ func (mw *RequireUser) Apply(next http.Handler) http.Handler {
 
 func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		usr := internal.User(r.Context())
+		usr := GetUser(r.Context())
 		if usr == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return

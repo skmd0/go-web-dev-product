@@ -53,7 +53,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 		vd.Alert = alert
 		clearAlert(w)
 	}
-	vd.User = internal.User(r.Context())
+	vd.User = internal.GetUser(r.Context())
 
 	var buf bytes.Buffer
 	csrfField := csrf.TemplateField(r)

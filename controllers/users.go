@@ -227,7 +227,7 @@ func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 
-	usr := internal.User(r.Context())
+	usr := internal.GetUser(r.Context())
 	token, _ := internal.RememberToken()
 	usr.Remember = token
 	_ = u.us.Update(usr)

@@ -1,4 +1,4 @@
-package rand
+package internal
 
 import (
 	"crypto/rand"
@@ -22,6 +22,7 @@ func GenerateRememberToken(numBytes int) (string, error) {
 	return base64.URLEncoding.EncodeToString(bs), nil
 }
 
+// GenerateByteSlice outputs a byte slice with random bytes as values with an length of n specified by parameter
 func GenerateByteSlice(n int) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
@@ -31,6 +32,8 @@ func GenerateByteSlice(n int) ([]byte, error) {
 	return b, nil
 }
 
+// NBytes returns the length of the Base64 encoded byte slice
+// It is used to validate the length of the remember hash.
 func NBytes(base64String string) (int, error) {
 	b, err := base64.URLEncoding.DecodeString(base64String)
 	if err != nil {

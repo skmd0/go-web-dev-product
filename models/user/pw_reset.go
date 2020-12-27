@@ -3,7 +3,6 @@ package user
 import (
 	"go-web-dev/errs"
 	"go-web-dev/internal"
-	"go-web-dev/rand"
 	"gorm.io/gorm"
 )
 
@@ -100,7 +99,7 @@ func (pv *pwResetValidator) setTokenIfUnset(pwr *PwReset) error {
 	if pwr.Token != "" {
 		return nil
 	}
-	token, err := rand.RememberToken()
+	token, err := internal.RememberToken()
 	if err != nil {
 		return err
 	}

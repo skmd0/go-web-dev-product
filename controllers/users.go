@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"go-web-dev/context"
 	"go-web-dev/errs"
+	"go-web-dev/internal"
 	"go-web-dev/models/user"
-	"go-web-dev/rand"
 	"go-web-dev/views"
 	"log"
 	"net/http"
@@ -201,7 +201,7 @@ func (u *Users) CompleteReset(w http.ResponseWriter, r *http.Request) {
 
 func (u *Users) signIn(w http.ResponseWriter, user *user.User) error {
 	if user.Remember == "" {
-		token, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
+		token, err := internal.GenerateRememberToken(internal.RememberTokenBytes)
 		if err != nil {
 			return err
 		}
@@ -230,7 +230,7 @@ func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 
 	usr := context.User(r.Context())
-	token, _ := rand.RememberToken()
+	token, _ := internal.RememberToken()
 	usr.Remember = token
 	_ = u.us.Update(usr)
 	http.Redirect(w, r, "/", http.StatusFound)

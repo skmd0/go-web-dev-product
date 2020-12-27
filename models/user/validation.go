@@ -3,7 +3,6 @@ package user
 import (
 	"go-web-dev/errs"
 	"go-web-dev/internal"
-	"go-web-dev/rand"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"regexp"
@@ -109,7 +108,7 @@ func (uv *userValidator) hmacGenerateIfMissing(user *User) error {
 	if user.Remember != "" {
 		return nil
 	}
-	rememberToken, err := rand.GenerateRememberToken(rand.RememberTokenBytes)
+	rememberToken, err := internal.GenerateRememberToken(internal.RememberTokenBytes)
 	if err != nil {
 		return err
 	}
@@ -121,11 +120,11 @@ func (uv *userValidator) hmacMinBytes(user *User) error {
 	if user.Remember == "" {
 		return nil
 	}
-	n, err := rand.NBytes(user.Remember)
+	n, err := internal.NBytes(user.Remember)
 	if err != nil {
 		return err
 	}
-	if n < rand.RememberTokenBytes {
+	if n < internal.RememberTokenBytes {
 		return errs.ErrRememberTooShort
 	}
 	return nil

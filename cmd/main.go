@@ -10,7 +10,6 @@ import (
 	"go-web-dev/internal"
 	"go-web-dev/middleware"
 	"go-web-dev/models"
-	"go-web-dev/rand"
 	"net/http"
 	"os"
 )
@@ -62,7 +61,7 @@ func run() error {
 		return err
 	}
 
-	csrfToken, err := rand.GenerateRememberToken(32)
+	csrfToken, err := internal.GenerateRememberToken(32)
 	if err != nil {
 		return err
 	}

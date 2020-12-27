@@ -21,19 +21,19 @@ func runUserValFunc(user *User, fns ...userValFunc) error {
 	return nil
 }
 
-func newUserValidator(udb UserDB, hmacKey, pepper string) *userValidator {
+func newUserValidator(udb TableUser, hmacKey, pepper string) *userValidator {
 	return &userValidator{
-		UserDB:     udb,
+		TableUser:  udb,
 		hmac:       internal.NewHMAC(hmacKey),
 		pepper:     pepper,
 		emailRegex: regexp.MustCompile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,16}$"),
 	}
 }
 
-var _ UserDB = &userValidator{}
+var _ TableUser = &userValidator{}
 
 type userValidator struct {
-	UserDB
+	TableUser
 	hmac       internal.HMAC
 	pepper     string
 	emailRegex *regexp.Regexp
@@ -44,7 +44,7 @@ func (uv *userValidator) ByEmail(email string) (*User, error) {
 	if err := runUserValFunc(user, uv.requireEmail, uv.normalizeEmail, uv.validEmail); err != nil {
 		return nil, err
 	}
-	return uv.UserDB.ByEmail(email)
+	return uv.TableUser.ByEmail(email)
 }
 
 func (uv *userValidator) ByRemember(token string) (*User, error) {
@@ -52,7 +52,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 	if err := runUserValFunc(user, uv.hmacHashToken); err != nil {
 		return nil, err
 	}
-	return uv.UserDB.ByRemember(user.RememberHash)
+	return uv.TableUser.ByRemember(user.RememberHash)
 }
 
 func (uv *userValidator) Create(user *User) error {
@@ -62,7 +62,7 @@ func (uv *userValidator) Create(user *User) error {
 	if err != nil {
 		return err
 	}
-	return uv.UserDB.Create(user)
+	return uv.TableUser.Create(user)
 }
 
 func (uv *userValidator) Update(user *User) error {
@@ -71,7 +71,7 @@ func (uv *userValidator) Update(user *User) error {
 	if err != nil {
 		return err
 	}
-	return uv.UserDB.Update(user)
+	return uv.TableUser.Update(user)
 }
 
 func (uv *userValidator) Delete(id uint) error {
@@ -79,7 +79,7 @@ func (uv *userValidator) Delete(id uint) error {
 	if err := runUserValFunc(user, uv.checkUserID); err != nil {
 		return err
 	}
-	return uv.UserDB.Delete(id)
+	return uv.TableUser.Delete(id)
 }
 
 func (uv *userValidator) bcryptPassword(user *User) error {

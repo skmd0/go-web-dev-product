@@ -53,9 +53,9 @@ func NewServices(configs ...ServicesConfig) (*Services, error) {
 }
 
 type Services struct {
-	Gallery gallery.GalleryService
+	Gallery gallery.ServiceGallery
 	Images  images.ImageService
-	User    user.UserService
+	User    user.ServiceUser
 	db      *gorm.DB
 }
 

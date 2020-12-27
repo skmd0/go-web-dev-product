@@ -23,12 +23,12 @@ const (
 
 type modelError string
 
-func (me modelError) Error() string {
-	return "models: " + strings.ToLower(string(me))
+func (mErr modelError) Error() string {
+	return "models: " + strings.ToLower(string(mErr))
 }
 
-func (me modelError) Public() string {
-	return me.Error()
+func (mErr modelError) Public() string {
+	return mErr.Error()
 }
 
 type privateError string

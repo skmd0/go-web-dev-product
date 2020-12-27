@@ -9,8 +9,6 @@ import (
 
 const (
 	AlertLvlSuccess = "primary"
-	AlertLvlInfo    = "info"
-	AlertLvlWarning = "warning"
 	AlertLvlError   = "danger"
 
 	AlertMsgGeneric = "Something went wrong. Please try again later. Contact us if the problem persists."

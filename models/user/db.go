@@ -16,7 +16,7 @@ type User struct {
 	RememberHash string `gorm:"not null;uniqueIndex"`
 }
 
-type UserDB interface {
+type TableUser interface {
 	ByID(id uint) (*User, error)
 	ByEmail(email string) (*User, error)
 	ByRemember(token string) (*User, error)
@@ -26,7 +26,7 @@ type UserDB interface {
 	Delete(id uint) error
 }
 
-var _ UserDB = &userGorm{}
+var _ TableUser = &userGorm{}
 
 type userGorm struct {
 	db *gorm.DB

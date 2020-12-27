@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	user.UserService
+	user.ServiceUser
 }
 
 func (mw *User) Apply(next http.Handler) http.Handler {
@@ -27,7 +27,7 @@ func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			next(w, r)
 			return
 		}
-		usr, err := mw.UserService.ByRemember(cookie.Value)
+		usr, err := mw.ServiceUser.ByRemember(cookie.Value)
 		if err != nil {
 			next(w, r)
 			return

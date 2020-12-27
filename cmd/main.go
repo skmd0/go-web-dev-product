@@ -65,7 +65,7 @@ func run() error {
 		return err
 	}
 	csrfMw := csrf.Protect([]byte(csrfToken), csrf.Secure(cfg.IsProd()))
-	userMw := internal.User{UserService: services.User}
+	userMw := internal.User{ServiceUser: services.User}
 	requireUserMw := internal.RequireUser{User: userMw}
 
 	r.Handle("/", staticC.Home).Methods("GET")

@@ -2,16 +2,16 @@ package gallery
 
 import "gorm.io/gorm"
 
-func NewGalleryService(db *gorm.DB) GalleryService {
+func NewGalleryService(db *gorm.DB) ServiceGallery {
 	gg := &galleryGorm{db}
 	gv := newGalleryValidator(gg)
 	return &galleryService{gv}
 }
 
-type GalleryService interface {
-	GalleryDB
+type ServiceGallery interface {
+	TableGallery
 }
 
 type galleryService struct {
-	GalleryDB
+	TableGallery
 }

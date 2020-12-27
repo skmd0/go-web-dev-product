@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-type UserService interface {
+type ServiceUser interface {
 	Authenticate(email, password string) (*User, error)
 	InitiateReset(email string) (string, error)
 	CompleteReset(token, newPw string) (*User, error)
-	UserDB
+	TableUser
 }
 
 func (us *userService) InitiateReset(email string) (string, error) {
@@ -50,23 +50,23 @@ func (us *userService) CompleteReset(token, newPw string) (*User, error) {
 	return usr, nil
 }
 
-func NewUserService(db *gorm.DB, hmacKey, pepper string) UserService {
+func NewUserService(db *gorm.DB, hmacKey, pepper string) ServiceUser {
 	ug := &userGorm{db}
 	uv := newUserValidator(ug, hmacKey, pepper)
 	hmac := internal.NewHMAC(hmacKey)
 	pwrGorm := &PwResetGorm{DB: db}
 	pwr := NewPwResetValidator(pwrGorm, hmac)
 	return &userService{
-		UserDB:    uv,
+		TableUser: uv,
 		pepper:    pepper,
 		pwResetDB: pwr,
 	}
 }
 
-var _ UserService = &userService{}
+var _ ServiceUser = &userService{}
 
 type userService struct {
-	UserDB
+	TableUser
 	pepper    string
 	pwResetDB PwResetDB
 }

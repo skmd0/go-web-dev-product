@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func NewUsers(us user.UserService) (*Users, error) {
+func NewUsers(us user.ServiceUser) (*Users, error) {
 	signUpView, err := views.NewView("bulma", "users/new")
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ type Users struct {
 	LoginView    *views.View
 	ForgotPwView *views.View
 	ResetPwView  *views.View
-	us           user.UserService
+	us           user.ServiceUser
 }
 
 type UserSignUp struct {

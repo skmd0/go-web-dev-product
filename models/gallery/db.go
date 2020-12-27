@@ -13,7 +13,7 @@ type Gallery struct {
 	Images []images.Image `gorm:"-"`
 }
 
-type GalleryDB interface {
+type TableGallery interface {
 	ByID(id uint) (*Gallery, error)
 	Create(gallery *Gallery) error
 	Update(gallery *Gallery) error

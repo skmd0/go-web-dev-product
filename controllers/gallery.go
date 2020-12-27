@@ -19,7 +19,7 @@ const (
 	maxMultipartMem = 1 << 20 // 1 megabyte
 )
 
-func NewGallery(gs gallery.GalleryService, is images.ImageService, r *mux.Router) (*Gallery, error) {
+func NewGallery(gs gallery.ServiceGallery, is images.ImageService, r *mux.Router) (*Gallery, error) {
 	newGalleryView, err := views.NewView("bulma", "gallery/new")
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ type Gallery struct {
 	ShowView  *views.View
 	EditView  *views.View
 	IndexView *views.View
-	gs        gallery.GalleryService
+	gs        gallery.ServiceGallery
 	is        images.ImageService
 	r         *mux.Router
 }
@@ -255,8 +255,8 @@ func (g *Gallery) galleryByID(w http.ResponseWriter, r *http.Request) (*gallery.
 		}
 		return nil, err
 	}
-	imgs, err := g.is.ByGalleryID(glr.ID)
-	glr.Images = imgs
+	gs, err := g.is.ByGalleryID(glr.ID)
+	glr.Images = gs
 	return glr, nil
 }
 

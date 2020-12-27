@@ -5,14 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func newGalleryValidator(gdb GalleryDB) *galleryValidator {
+func newGalleryValidator(gdb TableGallery) *galleryValidator {
 	return &galleryValidator{
-		GalleryDB: gdb,
+		TableGallery: gdb,
 	}
 }
 
 type galleryValidator struct {
-	GalleryDB
+	TableGallery
 }
 
 func (gv *galleryValidator) Create(gallery *Gallery) error {
@@ -20,7 +20,7 @@ func (gv *galleryValidator) Create(gallery *Gallery) error {
 	if err != nil {
 		return err
 	}
-	return gv.GalleryDB.Create(gallery)
+	return gv.TableGallery.Create(gallery)
 }
 
 func (gv *galleryValidator) Update(gallery *Gallery) error {
@@ -28,7 +28,7 @@ func (gv *galleryValidator) Update(gallery *Gallery) error {
 	if err != nil {
 		return err
 	}
-	return gv.GalleryDB.Update(gallery)
+	return gv.TableGallery.Update(gallery)
 }
 
 func (gv *galleryValidator) Delete(id uint) error {
@@ -36,7 +36,7 @@ func (gv *galleryValidator) Delete(id uint) error {
 	if err := runGalleryValFunc(glr, gv.checkGalleryID); err != nil {
 		return err
 	}
-	return gv.GalleryDB.Delete(id)
+	return gv.TableGallery.Delete(id)
 }
 
 func (gv *galleryValidator) userIDRequired(gallery *Gallery) error {

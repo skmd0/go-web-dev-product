@@ -2,7 +2,7 @@ package user
 
 import (
 	"go-web-dev/errs"
-	"go-web-dev/hash"
+	"go-web-dev/internal"
 	"go-web-dev/rand"
 	"gorm.io/gorm"
 )
@@ -82,7 +82,7 @@ func (pg *PwResetGorm) first(db *gorm.DB) (*PwReset, error) {
 	}
 }
 
-func NewPwResetValidator(db PwResetDB, hmac hash.HMAC) *pwResetValidator {
+func NewPwResetValidator(db PwResetDB, hmac internal.HMAC) *pwResetValidator {
 	return &pwResetValidator{
 		PwResetDB: db,
 		hmac:      hmac,
@@ -118,7 +118,7 @@ func (pv *pwResetValidator) hmacToken(pwr *PwReset) error {
 
 type pwResetValidator struct {
 	PwResetDB
-	hmac hash.HMAC
+	hmac internal.HMAC
 }
 
 type pwResetValFn func(*PwReset) error

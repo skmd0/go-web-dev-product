@@ -2,7 +2,7 @@ package user
 
 import (
 	"go-web-dev/errs"
-	"go-web-dev/hash"
+	"go-web-dev/internal"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"time"
@@ -54,7 +54,7 @@ func (us *userService) CompleteReset(token, newPw string) (*User, error) {
 func NewUserService(db *gorm.DB, hmacKey, pepper string) UserService {
 	ug := &userGorm{db}
 	uv := newUserValidator(ug, hmacKey, pepper)
-	hmac := hash.NewHMAC(hmacKey)
+	hmac := internal.NewHMAC(hmacKey)
 	pwrGorm := &PwResetGorm{DB: db}
 	pwr := NewPwResetValidator(pwrGorm, hmac)
 	return &userService{

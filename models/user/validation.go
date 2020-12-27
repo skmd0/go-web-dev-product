@@ -2,7 +2,7 @@ package user
 
 import (
 	"go-web-dev/errs"
-	"go-web-dev/hash"
+	"go-web-dev/internal"
 	"go-web-dev/rand"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -26,7 +26,7 @@ func runUserValFunc(user *User, fns ...userValFunc) error {
 func newUserValidator(udb UserDB, hmacKey, pepper string) *userValidator {
 	return &userValidator{
 		UserDB:     udb,
-		hmac:       hash.NewHMAC(hmacKey),
+		hmac:       internal.NewHMAC(hmacKey),
 		pepper:     pepper,
 		emailRegex: regexp.MustCompile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,16}$"),
 	}
@@ -36,7 +36,7 @@ var _ UserDB = &userValidator{}
 
 type userValidator struct {
 	UserDB
-	hmac       hash.HMAC
+	hmac       internal.HMAC
 	pepper     string
 	emailRegex *regexp.Regexp
 }

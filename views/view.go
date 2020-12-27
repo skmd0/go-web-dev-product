@@ -12,21 +12,30 @@ import (
 	"path/filepath"
 )
 
-func NewView(layout string, layouts ...string) (*View, error) {
-	prependViewDir(layouts)
-	appendGoHTMLExt(layouts)
-	layouts = append(layouts, getLayouts()...)
+const (
+	templatesDirPathGlob = "../views/layouts/*.gohtml"
+)
+
+func NewView(baseTemplate string, templates ...string) (*View, error) {
+	prependViewDir(templates)
+	appendGoHTMLExt(templates)
+	partialTemplates, err := getPartialTemplates(templatesDirPathGlob)
+	if err != nil {
+		return nil, err
+	}
+	templates = append(templates, partialTemplates...)
+	// csrf protection
 	t, err := template.New("").Funcs(template.FuncMap{
 		"csrfField": func() (template.HTML, error) {
 			return "", errors.New("CSRF is not implemented")
 		},
-	}).ParseFiles(layouts...)
+	}).ParseFiles(templates...)
 	if err != nil {
 		return nil, err
 	}
 	return &View{
 		Template: t,
-		Layout:   layout,
+		Layout:   baseTemplate,
 	}, nil
 }
 
@@ -75,22 +84,22 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 	}
 }
 
-func getLayouts() []string {
-	layouts, err := filepath.Glob("../views/layouts/*.gohtml")
+func getPartialTemplates(path string) ([]string, error) {
+	templates, err := filepath.Glob(path)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return layouts
+	return templates, nil
 }
 
-func prependViewDir(layouts []string) {
-	for i, l := range layouts {
-		layouts[i] = "../views/" + l
+func prependViewDir(templates []string) {
+	for i, l := range templates {
+		templates[i] = "../views/" + l
 	}
 }
 
-func appendGoHTMLExt(layouts []string) {
-	for i, l := range layouts {
-		layouts[i] = l + ".gohtml"
+func appendGoHTMLExt(templates []string) {
+	for i, l := range templates {
+		templates[i] = l + ".gohtml"
 	}
 }

@@ -12,19 +12,25 @@ func TestNewHMAC(t *testing.T) {
 }
 
 func TestHMAC_Hash(t *testing.T) {
-	key := "my-hmac-secret-key"
-	h := NewHMAC(key)
-
-	input := "3NTSaJPS84ll2MqUyY5gUc1e85802GqXAPrYFp9ZvYw="
-	got := h.Hash(input)
-	want := "MIzRSOPTyTDFpnL38OP8iP8JPdwpPOawvZlPcdEdKHI="
-	if got != want {
-		t.Errorf("hmac.Hash(%q) = %q; want %q", input, got, want)
+	type args struct {
+		arg string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"default hmac key", args{"3NTSaJPS84ll2MqUyY5gUc1e85802GqXAPrYFp9ZvYw="}, "MIzRSOPTyTDFpnL38OP8iP8JPdwpPOawvZlPcdEdKHI="},
 	}
 
-	inputEmpty := ""
-	gotEmpty := h.Hash(inputEmpty)
-	if gotEmpty == "" {
-		t.Error("hmac.Hash() = ''; want non empty value")
+	for _, tt := range tests {
+		key := "my-hmac-secret-key"
+		h := NewHMAC(key)
+		t.Run(tt.name, func(t *testing.T) {
+			got := h.Hash(tt.args.arg)
+			if got != tt.want {
+				t.Errorf("hmac.Hash(%q) = %q; want %q", tt.args.arg, got, tt.want)
+			}
+		})
 	}
 }

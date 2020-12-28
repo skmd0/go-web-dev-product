@@ -8,6 +8,7 @@ import (
 	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
 	"go-web-dev/internal"
+	"go-web-dev/middleware"
 	"go-web-dev/models"
 	"net/http"
 	"os"
@@ -65,8 +66,8 @@ func run() error {
 		return err
 	}
 	csrfMw := csrf.Protect([]byte(csrfToken), csrf.Secure(cfg.IsProd()))
-	userMw := internal.User{ServiceUser: services.User}
-	requireUserMw := internal.RequireUser{User: userMw}
+	userMw := middleware.User{ServiceUser: services.User}
+	requireUserMw := middleware.RequireUser{User: userMw}
 
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")

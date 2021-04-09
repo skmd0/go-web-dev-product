@@ -3,15 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gorilla/csrf"
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	"go-web-dev/controllers"
 	"go-web-dev/internal"
 	"go-web-dev/middleware"
 	"go-web-dev/models"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
 func main() {

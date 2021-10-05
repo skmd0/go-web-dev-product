@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"go-web-dev/context"
 	"go-web-dev/internal"
 	"go-web-dev/models/gallery"
@@ -11,6 +10,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 const (
